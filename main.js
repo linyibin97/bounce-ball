@@ -37,7 +37,7 @@ class Ball {
 }
 
 function loop() {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
+    ctx.fillStyle = "#000"
     ctx.fillRect(0, 0, WIDTH, HEIGHT)
 
     ball.draw()
@@ -49,7 +49,7 @@ function loop() {
 
 const random = (l,h)=>Math.floor(Math.random()*(h-l)) + l
 const config = {
-    speed : 5,
+    speed : 10,
     ballsize : 20
 }
 let ball
