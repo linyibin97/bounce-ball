@@ -1,11 +1,20 @@
 const canvas = document.querySelector("canvas")
 const ctx = canvas.getContext("2d")
 
+const RADIUS = 10   //球半径
+const BALLCOLOR = '#FFC600' //球颜色
 let WIDTH = 480
-let HEIGHT = 960
+let HEIGHT = 800
+let vel = 10 //运动方向上的速度
+let ballNums = 1 //发射球的数量
+let balls = new Array()
+
+const random = (l,h)=>Math.floor(Math.random()*(h-l)) + l
 
 canvas.width = WIDTH;
 canvas.height = HEIGHT;
+ctx.fillStyle = "#000"
+ctx.fillRect(0, 0, WIDTH, HEIGHT)
 
 class Ball {
     constructor(x, y, r, velX, velY, color) {
@@ -49,22 +58,19 @@ function loop() {
     requestAnimationFrame(loop)
 }
 
-const random = (l,h)=>Math.floor(Math.random()*(h-l)) + l
-const config = {
-    speed : 10,
-    ballsize : 10
+function shoot(event) {
+    //点击的点 与 发射点（底部中间） 的距离
+    const startX = Math.floor(WIDTH/2)
+    const startY = HEIGHT - RADIUS
+    const dX = event.offsetX - startX
+    const dY = event.offsetY - startY
+    const velX = vel * dX / Math.sqrt(dX*dX + dY*dY)
+    const velY = vel * dY / Math.sqrt(dX*dX + dY*dY)
+    
+    balls.push(new Ball(startX,startY,RADIUS,velX,velY,`rgb(${random(0, 255)},${random(0, 255)},${random(0, 255)})`))
 }
-const balls = new Array()
+
 window.onload = ()=>{
-    for (let i=0; i<100; i++) {
-        balls.push(new Ball(
-            random(0,WIDTH),
-            random(0,HEIGHT),
-            config.ballsize,
-            random(-config.speed,config.speed),
-            random(-config.speed,config.speed),
-            `rgb(${random(0, 255)},${random(0, 255)},${random(0, 255)})`
-        ))
-    }
+    canvas.onclick = shoot
     loop()
 }
