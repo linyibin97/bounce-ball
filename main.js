@@ -48,8 +48,8 @@ function updateView() {
 }
 
 const random = (l,h)=>Math.floor(Math.random()*(h-l)) + l
-const YtoI = (y) => Math.floor(y/HEIGHT*n)
-const XtoJ = (x) => Math.floor(x/WIDTH*m)
+const YtoI = (y) => Math.floor(y/blockSize)
+const XtoJ = (x) => Math.floor(x/blockSize)
 
 class Ball {
     constructor(x, y, r, velX, velY, color) {
@@ -88,11 +88,11 @@ class Ball {
         } else if (x+dx+r>WIDTH) {
             this.x = 2*WIDTH - 2*r - x - Math.abs(dx)
             this.velX = -this.velX
-        } else if (martix[YtoI(y)][XtoJ(x+dx-r)]>0) {
+        } else if (YtoI(y)<n && martix[YtoI(y)][XtoJ(x+dx-r)]>0) {
             martix[YtoI(y)][XtoJ(x+dx-r)]--
             this.x = Math.abs(dx) + 2*r - x + 2*(XtoJ(x+dx-r)+1)*blockSize
             this.velX = -this.velX
-        } else if (martix[YtoI(y)][XtoJ(x+dx+r)]>0) {
+        } else if (YtoI(y)<n && martix[YtoI(y)][XtoJ(x+dx+r)]>0) {
             martix[YtoI(y)][XtoJ(x+dx+r)]--
             this.x = 2*(XtoJ(x+dx+r))*blockSize - 2*r - x - Math.abs(dx)
             this.velX = -this.velX
@@ -105,13 +105,13 @@ class Ball {
             this.velY = -this.velY
         } else if (y+dy+r>HEIGHT) {
             this.y = y + dy
-        } else if (martix[YtoI(y+dy-r)][XtoJ(x)]>0) {
+        } else if (YtoI(y+dy-r)<n && martix[YtoI(y+dy-r)][XtoJ(x)]>0) {
             martix[YtoI(y+dy-r)][XtoJ(x)]--
             this.y = Math.abs(dy) + 2*r - y + 2*(YtoI(y+dy-r)+1)*blockSize
             this.velY = -this.velY
-        } else if (martix[YtoI(y+dy+r)][XtoJ(x)]>0) {
+        } else if (YtoI(y+dy+r)<n && martix[YtoI(y+dy+r)][XtoJ(x)]>0) {
             martix[YtoI(y+dy+r)][XtoJ(x)]--
-            this.y = 2*(YtoI(y+dy+r))*blockSize + 2*r - y - Math.abs(dy)
+            this.y = 2*(YtoI(y+dy+r))*blockSize - 2*r - y - Math.abs(dy)
             this.velY = -this.velY
         } else {
             this.y = y + dy
@@ -151,6 +151,9 @@ function loop() {
 }
 
 function shoot(event) {
+    // console.log(YtoI(event.offsetY),XtoJ(event.offsetX))
+    // console.log(event.offsetY,HEIGHT)
+    // return
     if (pasue) return
     //排除角度太小的情况
     if (event.offsetY > 0.9 * HEIGHT) return
