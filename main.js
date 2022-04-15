@@ -1,8 +1,8 @@
 const canvas = document.querySelector("canvas")
 const ctx = canvas.getContext("2d")
 
-let WIDTH = 500
-let HEIGHT = 500
+let WIDTH = 480
+let HEIGHT = 960
 
 canvas.width = WIDTH;
 canvas.height = HEIGHT;
@@ -40,9 +40,11 @@ function loop() {
     ctx.fillStyle = "#000"
     ctx.fillRect(0, 0, WIDTH, HEIGHT)
 
-    ball.draw()
-    ball.conllisionDectect()
-    ball.move()
+    for (let ball of balls) {
+        ball.draw()
+        ball.conllisionDectect()
+        ball.move()
+    }
 
     requestAnimationFrame(loop)
 }
@@ -50,17 +52,19 @@ function loop() {
 const random = (l,h)=>Math.floor(Math.random()*(h-l)) + l
 const config = {
     speed : 10,
-    ballsize : 20
+    ballsize : 10
 }
-let ball
+const balls = new Array()
 window.onload = ()=>{
-    ball = new Ball(
-        random(0,WIDTH),
-        random(0,HEIGHT),
-        config.ballsize,
-        random(-config.speed,config.speed),
-        random(-config.speed,config.speed),
-        `rgb(${random(0, 255)},${random(0, 255)},${random(0, 255)})`
-    )
+    for (let i=0; i<100; i++) {
+        balls.push(new Ball(
+            random(0,WIDTH),
+            random(0,HEIGHT),
+            config.ballsize,
+            random(-config.speed,config.speed),
+            random(-config.speed,config.speed),
+            `rgb(${random(0, 255)},${random(0, 255)},${random(0, 255)})`
+        ))
+    }
     loop()
 }
