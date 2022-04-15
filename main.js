@@ -1,20 +1,23 @@
 const canvas = document.querySelector("canvas")
 const ctx = canvas.getContext("2d")
 
-const RADIUS = 10   //球半径
-const BALLCOLOR = '#FFC600' //球颜色
+let vel = 10 //运动方向上的速度
+let RADIUS = 10   //球半径
 let WIDTH = 480
 let HEIGHT = 800
-let vel = 10 //运动方向上的速度
-let ballNums = 1 //发射球的数量
-let balls = new Array()
-
-const random = (l,h)=>Math.floor(Math.random()*(h-l)) + l
-
-canvas.width = WIDTH;
-canvas.height = HEIGHT;
+canvas.width = WIDTH
+canvas.height = HEIGHT
 ctx.fillStyle = "#000"
 ctx.fillRect(0, 0, WIDTH, HEIGHT)
+
+let ballNums = 100   //发射球的数量
+let balls = new Array() //已发射的球
+let readyBalls = new Array()    //待发射的球
+let pasue = false
+let framcount = 0   //渲染帧计数
+const interval = 5 //小球发射间隔
+
+const random = (l,h)=>Math.floor(Math.random()*(h-l)) + l
 
 class Ball {
     constructor(x, y, r, velX, velY, color) {
@@ -45,20 +48,41 @@ class Ball {
     }
 }
 
+// let prev = 0
+
 function loop() {
+
     ctx.fillStyle = "#000"
     ctx.fillRect(0, 0, WIDTH, HEIGHT)
 
-    for (let ball of balls) {
+    // let curr = Date.now()
+    // if (curr-prev>18) console.log(curr-prev)
+    // prev = curr
+    
+    // console.log(readyBalls)
+    // console.log(balls)
+
+    //每interval帧发射一个小球
+    if (readyBalls.length>0 && framcount == 0) {
+        balls.push(readyBalls.pop())
+    }
+    framcount = (framcount + 1) % interval
+
+    balls = balls.filter(ball=>{
         ball.draw()
         ball.conllisionDectect()
         ball.move()
-    }
+        return ball.y+ball.r<HEIGHT
+    })
 
-    requestAnimationFrame(loop)
+    if (balls.length>0 || readyBalls.length>0) requestAnimationFrame(loop)
+        else pasue = false
 }
 
 function shoot(event) {
+    if (pasue) return
+    //排除角度太小的情况
+    if (event.offsetY > 0.9 * HEIGHT) return
     //点击的点 与 发射点（底部中间） 的距离
     const startX = Math.floor(WIDTH/2)
     const startY = HEIGHT - RADIUS
@@ -67,10 +91,14 @@ function shoot(event) {
     const velX = vel * dX / Math.sqrt(dX*dX + dY*dY)
     const velY = vel * dY / Math.sqrt(dX*dX + dY*dY)
     
-    balls.push(new Ball(startX,startY,RADIUS,velX,velY,`rgb(${random(0, 255)},${random(0, 255)},${random(0, 255)})`))
+    for (let i=0; i<ballNums; i++) {
+        readyBalls.push(new Ball(startX,startY,RADIUS,velX,velY,`rgb(${random(0, 255)},${random(0, 255)},${random(0, 255)})`))
+    }
+    pasue = true
+    framcount = 0
+    loop()
 }
 
 window.onload = ()=>{
     canvas.onclick = shoot
-    loop()
 }
