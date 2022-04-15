@@ -8,8 +8,8 @@ let pasue = false
 let framcount = 0   //渲染帧计数
 const interval = 5 //小球发射间隔
 
-let vel = 10 //运动方向上的速度
-let RADIUS = 10   //球半径
+let RADIUS = 10 //球半径
+let vel = RADIUS //运动方向上的速度
 let WIDTH = 480
 let HEIGHT = 800
 
@@ -47,8 +47,9 @@ function updateView() {
     balls.forEach(ball=>ball.draw())
 }
 
-
 const random = (l,h)=>Math.floor(Math.random()*(h-l)) + l
+const YtoI = (y) => Math.floor(y/HEIGHT*n)
+const XtoJ = (x) => Math.floor(x/WIDTH*m)
 
 class Ball {
     constructor(x, y, r, velX, velY, color) {
@@ -66,16 +67,55 @@ class Ball {
         ctx.fill()
     }
     move() {
-        this.x += this.velX
-        this.y += this.velY
-    }
-    conllisionDectect() {
-        if(this.x - this.r < 0 || this.x + this.r > WIDTH) {
+        // this.x += this.velX
+        // this.y += this.velY
+        // if(this.x - this.r < 0 || this.x + this.r > WIDTH) {
+        //     this.velX = -this.velX
+        // }
+        // if(this.y - this.r < 0 || this.y + this.r > HEIGHT) {
+        //     this.velY = -this.velY
+        // }
+
+        let x = this.x
+        let y = this.y
+        let r = this.r
+        let dx = this.velX 
+        let dy = this.velY 
+
+        if (x+dx-r<0) {
+            this.x = Math.abs(dx) + 2*r - x
             this.velX = -this.velX
+        } else if (x+dx+r>WIDTH) {
+            this.x = 2*WIDTH - 2*r - x - Math.abs(dx)
+            this.velX = -this.velX
+        } else if (martix[YtoI(y)][XtoJ(x+dx-r)]>0) {
+            martix[YtoI(y)][XtoJ(x+dx-r)]--
+            this.x = Math.abs(dx) + 2*r - x + 2*(XtoJ(x+dx-r)+1)*blockSize
+            this.velX = -this.velX
+        } else if (martix[YtoI(y)][XtoJ(x+dx+r)]>0) {
+            martix[YtoI(y)][XtoJ(x+dx+r)]--
+            this.x = 2*(XtoJ(x+dx+r))*blockSize - 2*r - x - Math.abs(dx)
+            this.velX = -this.velX
+        } else {
+            this.x = x + dx
         }
-        if(this.y - this.r < 0 || this.y + this.r > HEIGHT) {
+        
+        if (y+dy-r<0) {
+            this.y = Math.abs(dy) + 2*r - y
             this.velY = -this.velY
-        }
+        } else if (y+dy+r>HEIGHT) {
+            this.y = y + dy
+        } else if (martix[YtoI(y+dy-r)][XtoJ(x)]>0) {
+            martix[YtoI(y+dy-r)][XtoJ(x)]--
+            this.y = Math.abs(dy) + 2*r - y + 2*(YtoI(y+dy-r)+1)*blockSize
+            this.velY = -this.velY
+        } else if (martix[YtoI(y+dy+r)][XtoJ(x)]>0) {
+            martix[YtoI(y+dy+r)][XtoJ(x)]--
+            this.y = 2*(YtoI(y+dy+r))*blockSize + 2*r - y - Math.abs(dy)
+            this.velY = -this.velY
+        } else {
+            this.y = y + dy
+        }     
     }
 }
 
@@ -96,7 +136,6 @@ function loop() {
 
     //移动小球 并去除碰撞底部的小球
     balls = balls.filter(ball=>{
-        ball.conllisionDectect()
         ball.move()
         return ball.y+ball.r<HEIGHT
     })
