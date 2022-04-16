@@ -18,10 +18,10 @@ function dataInit() {
     let windowWidth = document.documentElement.clientWidth || document.body.clientWidth
     let windowHeight = document.documentElement.clientHeight || document.body.clientHeight
     if (windowHeight/windowWidth>5/3) {
-        WIDTH = Math.floor(windowWidth)
+        WIDTH = Math.floor(windowWidth*0.9)
         HEIGHT = Math.floor(WIDTH/3*5)
     } else {
-        HEIGHT = Math.floor(windowHeight)
+        HEIGHT = Math.floor(windowHeight*0.9)
         WIDTH = Math.floor(HEIGHT/5*3)
     }
     // WIDTH = 480
