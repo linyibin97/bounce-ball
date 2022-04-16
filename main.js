@@ -14,7 +14,7 @@ let RADIUS = 10 //球半径
 let vel = RADIUS //运动方向上的速度
 let startX = Math.floor(WIDTH/2)    //发射点
 let startY = HEIGHT - RADIUS
-let startColor = "#122738"    //发射球的颜色
+let startColor = "#FFC600"    //发射球的颜色
 const n = 15 //矩阵高
 const m = 10 //矩阵宽
 const martix = Array.from(new Array(n), ()=>new Array(m).fill(0))
@@ -86,8 +86,8 @@ function updateView() {
 
 let round = 0 //回合数记录
 let score = 0
-let pBlock = 0.3
-let pReward = 0.2
+let pBlock = 0.2
+let pReward = 0.1
 let nReward = 0
 let nBlock = 0
 
@@ -95,11 +95,11 @@ function generateLayer() {
     if (martix[martix.length-1].some((num)=>num>0)) return false //还有未消除的方块
     martix.pop()
     const layer = new Array(m).fill(0)
+    layer[Math.floor(Math.random()*10)] = -nReward //生成奖励球
     for (let j=0; j<m; j++) {
+        if (layer[j]<0) continue
         if (Math.random()<pBlock) { //生成方块
             layer[j] = nBlock
-        } else if (Math.random()<pReward) {  //生成奖励球
-            layer[j] = -nReward
         }
     }
     martix.unshift(layer)
@@ -108,9 +108,9 @@ function generateLayer() {
 
 function nextRound() {
     console.log(score)
-    pBlock = Math.min(0.9, pBlock+0.01)
+    pBlock = Math.min(0.5, pBlock+0.005)
     nBlock++
-    nReward = Math.floor(round/50) + 1
+    nReward = Math.floor(round/30) + 1
     round++
     if (!generateLayer()) {
         alert('Game Over! score:'+score)
@@ -261,7 +261,7 @@ function shoot(event) {
             RADIUS,
             velX,
             velY,
-            i==0? startColor : `rgb(${random(127, 255)},${random(127, 255)},${random(127, 255)})`
+            i==0? startColor : `rgb(${random(32, 255)},${random(32, 255)},${random(32, 255)})`
         ))
     }
 
