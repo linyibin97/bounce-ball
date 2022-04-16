@@ -31,7 +31,7 @@ ctx.strokeStyle = "#eee"
 
 const blockColor = ['#33691E','#1B5E20','#004D40','#006064','#0D47A1','#1A237E','#311B92','#4A148C','#880E4F','#B71C1C']
 const getBlockColor = (num)=>{
-    num = Math.floor((num%100)/10)
+    num = Math.floor((num%50)/5)    //每5变化一次颜色
     return blockColor[num]
 }
 
