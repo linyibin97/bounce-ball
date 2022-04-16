@@ -110,7 +110,7 @@ function nextRound() {
     console.log(score)
     pBlock = Math.min(0.5, pBlock+0.005)
     nBlock++
-    nReward = Math.floor(round/30) + 1
+    nReward = Math.floor(round/50) + 1
     round++
     if (!generateLayer()) {
         alert('Game Over! score:'+score)
