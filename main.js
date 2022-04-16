@@ -9,7 +9,7 @@ let readyBalls = new Array()    //待发射的球
 let pasue = false
 let framcount = 0   //渲染帧计数
 const interval = 3 //小球发射间隔帧数
-const martix = Array.from(new Array(n), ()=>new Array(m).fill(0))
+const martix = Array.from(new Array(n+5), ()=>new Array(m).fill(0))
 let startColor = "#FFC600"    //发射球的颜色
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
 let eleBoard, eleRound, eleScore, eleBalls
@@ -58,9 +58,6 @@ const getBlockColor = (num)=>{
 }
 
 const random = (l,h)=>Math.floor(Math.random()*(h-l)) + l
-const YtoI = (y) => Math.floor(y/blockSize)
-const XtoJ = (x) => Math.floor(x/blockSize)
-
 
 //更新视图
 function updateView() {
@@ -128,7 +125,7 @@ let nReward = 0
 let nBlock = 0
 
 function generateLayer() {
-    if (martix[martix.length-1].some((num)=>num>0)) return false //还有未消除的方块
+    if (martix[n-1].some((num)=>num>0)) return false //还有未消除的方块
     martix.pop()
     const layer = new Array(m).fill(0)
     if (round % 3 == 0) layer[Math.floor(Math.random()*10)] = -nReward //每3层生成奖励球
@@ -173,63 +170,105 @@ class Ball {
         ctx.closePath()
     }
     move() {
-        // this.x += this.velX
-        // this.y += this.velY
-        // if(this.x - this.r < 0 || this.x + this.r > WIDTH) {
-        //     this.velX = -this.velX
-        // }
-        // if(this.y - this.r < 0 || this.y + this.r > HEIGHT) {
-        //     this.velY = -this.velY
-        // }
-
+        const YtoI = (y) => Math.floor(y/blockSize)
+        const XtoJ = (x) => Math.floor(x/blockSize)
+        const bounce = (x, r, dx, ex)=> {
+            if (dx>0) ex -= r 
+                else ex += r
+            return ex - ((x + dx) - ex)
+        }
+        const eliminate = (i, j) => {
+            if (0<=j && j<m && 0<=i && i<n) {
+                score += 10
+                martix[i][j] = Math.max(0, martix[i][j] - 1)
+            }
+        }
+        let i = YtoI(this.y)
+        let j = XtoJ(this.x)
         let x = this.x
         let y = this.y
         let r = this.r
-        let dx = this.velX 
-        let dy = this.velY 
+        let dx = this.velX
+        let dy = this.velY
 
-        if (x+dx-r<0) {
-            this.x = Math.abs(dx) + 2*r - x
-            this.velX = -this.velX
-        } else if (x+dx+r>WIDTH) {
-            this.x = 2*WIDTH - 2*r - x - Math.abs(dx)
-            this.velX = -this.velX
-        } else if (YtoI(y)<n && dx<0 && martix[YtoI(y)][XtoJ(x+dx-r)]>0) {
-            martix[YtoI(y)][XtoJ(x+dx-r)]--
-            score += 10
-            this.x = Math.abs(dx) + 2*r - x + 2*(XtoJ(x+dx-r)+1)*blockSize
-            this.velX = -this.velX
-        } else if (YtoI(y)<n && dx>0 && martix[YtoI(y)][XtoJ(x+dx+r)]>0) {
-            martix[YtoI(y)][XtoJ(x+dx+r)]--
-            score += 10
-            this.x = 2*(XtoJ(x+dx+r))*blockSize - 2*r - x - Math.abs(dx)
-            this.velX = -this.velX
-        } else {
-            this.x = x + dx
-        }
-        
+        // #region
         if (y+dy-r<0) {
-            this.y = Math.abs(dy) + 2*r - y
+            this.y = bounce(y, r, dy, 0)
             this.velY = -this.velY
         } else if (y+dy+r>HEIGHT) {
             this.y = y + dy
         } else if (YtoI(y+dy-r)<n && dy<0 && martix[YtoI(y+dy-r)][XtoJ(x)]>0) {
-            martix[YtoI(y+dy-r)][XtoJ(x)]--
-            score += 10
-            this.y = Math.abs(dy) + 2*r - y + 2*(YtoI(y+dy-r)+1)*blockSize
+            eliminate(YtoI(y+dy-r),XtoJ(x))
+            this.y = bounce(y, r, dy, (YtoI(y+dy-r)+1)*blockSize)
             this.velY = -this.velY
         } else if (YtoI(y+dy+r)<n && dy>0 && martix[YtoI(y+dy+r)][XtoJ(x)]>0) {
-            martix[YtoI(y+dy+r)][XtoJ(x)]--
-            score += 10
-            this.y = 2*(YtoI(y+dy+r))*blockSize - 2*r - y - Math.abs(dy)
+            eliminate(YtoI(y+dy+r),XtoJ(x))
+            this.y = bounce(y, r, dy, (YtoI(y+dy+r))*blockSize)
             this.velY = -this.velY
         } else {
             this.y = y + dy
         } 
+        if (x+dx-r<0) {
+            this.x = bounce(x, r, dx, 0)
+            this.velX = -this.velX
+        } else if (x+dx+r>WIDTH) {
+            this.x = bounce(x, r, dx, WIDTH)
+            this.velX = -this.velX
+        } else if (YtoI(y)<n && dx<0 && martix[YtoI(y)][XtoJ(x+dx-r)]>0) {
+            eliminate(YtoI(y), XtoJ(x+dx-r)) 
+            this.x = bounce(x, r, dx, (XtoJ(x+dx-r)+1)*blockSize)
+            this.velX = -this.velX
+        } else if (YtoI(y)<n && dx>0 && martix[YtoI(y)][XtoJ(x+dx+r)]>0) {
+            eliminate(YtoI(y), XtoJ(x+dx+r))
+            this.x = bounce(x, r, dx, (XtoJ(x+dx+r))*blockSize)
+            this.velX = -this.velX
+        } else {
+            this.x = x + dx
+        }
+        // #endregion
+        
+        // #region
+        // let eLeft = (j == 0 || martix[i][j-1] > 0) ? j * blockSize : -Infinity
+        // let eRight = (j == m-1 || martix[i][j+1] > 0) ? (j + 1) * blockSize : Infinity
+        // if (dx < 0) {
+        //     if (eLeft <= x + dx - r) {
+        //         this.x = x + dx
+        //     } else {
+        //         this.velX = -this.velX
+        //         this.x = bounce(x, r, dx, eLeft)
+        //         eliminate(i, j-1)
+        //     }
+        // } else {
+        //     if (x + dx + r <= eRight) {
+        //         this.x = x + dx
+        //     } else {
+        //         this.velX = -this.velX
+        //         this.x = bounce(x, r, dx, eRight)
+        //         eliminate(i, j+1)
+        //     }
+        // }
+        // let eTop = (i == 0 || martix[i-1][j] > 0) ? i * blockSize : -Infinity
+        // let eBottom = (martix[i+1][j] > 0) ? (i + 1) * blockSize : Infinity
+        // if (dy < 0) {
+        //     if (eTop <= y + dy - r) {
+        //         this.y = y + dy
+        //     } else {
+        //         this.velY = -this.velY
+        //         this.y = bounce(y, r, dy, eTop)
+        //         eliminate(i-1, j)
+        //     }
+        // } else {
+        //     if (y + dy + r <= eBottom) {
+        //         this.y = y + dy
+        //     } else {
+        //         this.velY = -this.velY
+        //         this.y = bounce(y, r, dy, eBottom)
+        //         eliminate(i+1, j)
+        //     }
+        // }
+        // #endregion
 
         //奖励球
-        let i = YtoI(this.y)
-        let j = XtoJ(this.x)
         if (0<=i && i<n && 0<=j && j<m && martix[i][j]<0) {
             ballNums += Math.abs(martix[i][j])
             martix[i][j] = 0
@@ -308,14 +347,17 @@ function shoot(event) {
 window.onload = ()=>{
     dataInit()
     canvas.onclick = shoot
-    // //test
-    // for (let i=0; i<n/2; i++) 
-    //     for (let j=0; j<m; j++) {
-    //         martix[i][j] = random(-100,100)
-    //         if (martix[i][j] < 0) {
-    //             if (Math.random()<0.2) martix[i][j] = -1
-    //                 else martix[i][j] = 0
-    //         }
-    //     }
-    nextRound()
+
+    //test
+    for (let i=0; i<n/3; i++) 
+    for (let j=0; j<m; j++) {
+        martix[i][j] = random(-20,20)
+        if (martix[i][j] < 0) {
+            if (Math.random()<0.2) martix[i][j] = -1
+                else martix[i][j] = 0
+        }
+    }
+    ballNums = 10
+
+    nextRound()    
 }
