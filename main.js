@@ -24,8 +24,8 @@ function dataInit() {
         HEIGHT = Math.floor(windowHeight)
         WIDTH = Math.floor(HEIGHT/5*3)
     }
-    WIDTH = 480
-    HEIGHT = Math.floor(WIDTH/3*5)
+    // WIDTH = 480
+    // HEIGHT = Math.floor(WIDTH/3*5)
     // console.log(windowHeight,windowWidth,WIDTH,HEIGHT)
     canvas.width = WIDTH
     canvas.height = HEIGHT
@@ -96,8 +96,8 @@ function updateView() {
     ctx.font= Math.floor(blockSize/3)+"px"+" Arial"
     ctx.textBaseline = "top"
     ctx.textAlign = "left"
+    // ctx.fillText(`Round:${round}   Score:${score}   Balls:${ballNums}`, 0.1*blockSize, deadline+0.1*blockSize)
     ctx.fillText(`Round:${round}   Score:${score}   Balls:${ballNums}`, 0.1*blockSize, deadline+0.1*blockSize)
-
 
     if (!pasue) {
         new Ball(startX, startY-RADIUS, RADIUS, 0, 0, startColor).draw()
