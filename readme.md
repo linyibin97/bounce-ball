@@ -1,5 +1,5 @@
 # 弹弹球
-[Demo](https://linyibin97.github.io/js-ball/)
+[Demo](https://linyibin97.github.io/bounce-ball/)
 
 ![preview](https://raw.githubusercontent.com/linyibin97/js-ball/master/preview.png)
 
