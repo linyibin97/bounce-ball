@@ -15,12 +15,10 @@ let vel = RADIUS //运动方向上的速度
 let startX = Math.floor(WIDTH/2)    //发射点
 let startY = HEIGHT - RADIUS
 let startColor = "#122738"    //发射球的颜色
-//方块矩阵
-const n = 15
-const m = 10
+const n = 15 //矩阵高
+const m = 10 //矩阵宽
 const martix = Array.from(new Array(n), ()=>new Array(m).fill(0))
 const blockSize = WIDTH/m
-
 const deadline = n*blockSize
 
 canvas.width = WIDTH
@@ -31,9 +29,9 @@ ctx.textBaseline = "middle"
 ctx.textAlign = "center"
 ctx.strokeStyle = "#eee"
 
-const blockColor = ['#FF9A04','#FED905','#B3DA03','#03934B','#028C73','#036A89','#04209B','#852F90','#C00173','#D00024']
+const blockColor = ['#33691E','#1B5E20','#004D40','#006064','#0D47A1','#1A237E','#311B92','#4A148C','#880E4F','#B71C1C']
 const getBlockColor = (num)=>{
-    num = Math.floor((n%100)/10)
+    num = Math.floor((num%100)/10)
     return blockColor[num]
 }
 
@@ -86,6 +84,42 @@ function updateView() {
     
 }
 
+let round = 0 //回合数记录
+let score = 0
+let pBlock = 0.5
+let pReward = 0.2
+let nReward = 1
+let nBlock = 1
+
+function generateLayer() {
+    if (martix[martix.length-1].some((num)=>num>0)) return false //还有未消除的方块
+    martix.pop()
+    const layer = new Array(m).fill(0)
+    for (let j=0; j<m; j++) {
+        if (Math.random()<pBlock) { //生成方块
+            layer[j] = nBlock
+        } else if (Math.random()<pReward) {  //生成奖励球
+            layer[j] = -nReward
+        }
+    }
+    martix.unshift(layer)
+    return true
+}
+
+function nextRound() {
+    console.log(score)
+    pBlock = Math.min(0.9, pBlock+0.01)
+    nBlock++
+    nReward = Math.floor(round/50) + 1
+    round++
+    if (!generateLayer()) {
+        alert('Game Over! score:'+score)
+        history.go(0)
+        return
+    }
+    updateView()
+}
+
 class Ball {
     constructor(x, y, r, velX, velY, color) {
         this.x = x
@@ -126,10 +160,12 @@ class Ball {
             this.velX = -this.velX
         } else if (YtoI(y)<n && dx<0 && martix[YtoI(y)][XtoJ(x+dx-r)]>0) {
             martix[YtoI(y)][XtoJ(x+dx-r)]--
+            score += 100
             this.x = Math.abs(dx) + 2*r - x + 2*(XtoJ(x+dx-r)+1)*blockSize
             this.velX = -this.velX
         } else if (YtoI(y)<n && dx>0 && martix[YtoI(y)][XtoJ(x+dx+r)]>0) {
             martix[YtoI(y)][XtoJ(x+dx+r)]--
+            score += 100
             this.x = 2*(XtoJ(x+dx+r))*blockSize - 2*r - x - Math.abs(dx)
             this.velX = -this.velX
         } else {
@@ -143,10 +179,12 @@ class Ball {
             this.y = y + dy
         } else if (YtoI(y+dy-r)<n && dy<0 && martix[YtoI(y+dy-r)][XtoJ(x)]>0) {
             martix[YtoI(y+dy-r)][XtoJ(x)]--
+            score += 100
             this.y = Math.abs(dy) + 2*r - y + 2*(YtoI(y+dy-r)+1)*blockSize
             this.velY = -this.velY
         } else if (YtoI(y+dy+r)<n && dy>0 && martix[YtoI(y+dy+r)][XtoJ(x)]>0) {
             martix[YtoI(y+dy+r)][XtoJ(x)]--
+            score += 100
             this.y = 2*(YtoI(y+dy+r))*blockSize - 2*r - y - Math.abs(dy)
             this.velY = -this.velY
         } else {
@@ -198,7 +236,7 @@ function loop() {
     else {
         framcount = 0
         pasue = false
-        updateView()
+        nextRound()
     }
 }
 
@@ -234,14 +272,15 @@ function shoot(event) {
 window.onload = ()=>{
     canvas.onclick = shoot
 
-    for (let i=0; i<n/2; i++) 
-        for (let j=0; j<m; j++) {
-            martix[i][j] = random(-10,10)
-            if (martix[i][j] < 0) {
-                if (Math.random()<0.2) martix[i][j] = -1
-                    else martix[i][j] = 0
-            }
-        }
+    // //test
+    // for (let i=0; i<n/2; i++) 
+    //     for (let j=0; j<m; j++) {
+    //         martix[i][j] = random(-100,100)
+    //         if (martix[i][j] < 0) {
+    //             if (Math.random()<0.2) martix[i][j] = -1
+    //                 else martix[i][j] = 0
+    //         }
+    //     }
 
-    updateView()
+    nextRound()
 }
