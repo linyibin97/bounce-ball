@@ -261,7 +261,7 @@ function shoot(event) {
             RADIUS,
             velX,
             velY,
-            i==0? startColor : `rgb(${random(0, 255)},${random(0, 255)},${random(0, 255)})`
+            i==0? startColor : `rgb(${random(127, 255)},${random(127, 255)},${random(127, 255)})`
         ))
     }
 
