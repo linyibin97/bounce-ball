@@ -14,8 +14,6 @@ let startColor = "#FFC600"    //发射球的颜色
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
 
 function dataInit() {
-    // WIDTH = 480
-    // HEIGHT = Math.floor(WIDTH/3*5)
     //自适应窗口
     let windowWidth = document.documentElement.clientWidth || document.body.clientWidth
     let windowHeight = document.documentElement.clientHeight || document.body.clientHeight
@@ -26,6 +24,8 @@ function dataInit() {
         HEIGHT = Math.floor(windowHeight)
         WIDTH = Math.floor(HEIGHT/5*3)
     }
+    WIDTH = 480
+    HEIGHT = Math.floor(WIDTH/3*5)
     // console.log(windowHeight,windowWidth,WIDTH,HEIGHT)
     canvas.width = WIDTH
     canvas.height = HEIGHT
