@@ -86,7 +86,7 @@ function updateView() {
 
 let round = 0 //回合数记录
 let score = 0
-let pBlock = 0.2
+let pBlock = 0.3
 let pReward = 0.1
 let nReward = 0
 let nBlock = 0
@@ -108,7 +108,7 @@ function generateLayer() {
 
 function nextRound() {
     console.log(score)
-    pBlock = Math.min(0.5, pBlock+0.005)
+    pBlock = Math.min(0.6, 0.3+0.1*Math.floor(round/50))
     nBlock++
     nReward = Math.floor(round/50) + 1
     round++
