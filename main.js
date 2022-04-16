@@ -197,11 +197,11 @@ class Ball {
             this.velY = -this.velY
         } else if (y+dy+r>HEIGHT) {
             this.y = y + dy
-        } else if (YtoI(y+dy-r)<n && dy<0 && martix[YtoI(y+dy-r)][XtoJ(x)]>0) {
+        } else if (dy<0 && martix[YtoI(y+dy-r)][XtoJ(x)]>0) {
             eliminate(YtoI(y+dy-r),XtoJ(x))
             this.y = bounce(y, r, dy, (YtoI(y+dy-r)+1)*blockSize)
             this.velY = -this.velY
-        } else if (YtoI(y+dy+r)<n && dy>0 && martix[YtoI(y+dy+r)][XtoJ(x)]>0) {
+        } else if (dy>0 && martix[YtoI(y+dy+r)][XtoJ(x)]>0) {
             eliminate(YtoI(y+dy+r),XtoJ(x))
             this.y = bounce(y, r, dy, (YtoI(y+dy+r))*blockSize)
             this.velY = -this.velY
@@ -214,11 +214,11 @@ class Ball {
         } else if (x+dx+r>WIDTH) {
             this.x = bounce(x, r, dx, WIDTH)
             this.velX = -this.velX
-        } else if (YtoI(y)<n && dx<0 && martix[YtoI(y)][XtoJ(x+dx-r)]>0) {
+        } else if (dx<0 && martix[YtoI(y)][XtoJ(x+dx-r)]>0) {
             eliminate(YtoI(y), XtoJ(x+dx-r)) 
             this.x = bounce(x, r, dx, (XtoJ(x+dx-r)+1)*blockSize)
             this.velX = -this.velX
-        } else if (YtoI(y)<n && dx>0 && martix[YtoI(y)][XtoJ(x+dx+r)]>0) {
+        } else if (dx>0 && martix[YtoI(y)][XtoJ(x+dx+r)]>0) {
             eliminate(YtoI(y), XtoJ(x+dx+r))
             this.x = bounce(x, r, dx, (XtoJ(x+dx+r))*blockSize)
             this.velX = -this.velX
