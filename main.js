@@ -4,14 +4,14 @@ const ctx = canvas.getContext("2d")
 let WIDTH = 480
 let HEIGHT = 800
 
-let ballNums = 1   //发射球的数量
+let ballNums = 0   //发射球的数量
 let balls = new Array() //已发射的球
 let readyBalls = new Array()    //待发射的球
 let pasue = false
 let framcount = 0   //渲染帧计数
-const interval = 4 //小球发射间隔帧数
-let RADIUS = 10 //球半径
-let vel = RADIUS //运动方向上的速度
+const interval = 3 //小球发射间隔帧数
+let RADIUS = 8 //球半径
+let vel = 12 //运动方向上的速度
 let startX = Math.floor(WIDTH/2)    //发射点
 let startY = HEIGHT - RADIUS
 let startColor = "#FFC600"    //发射球的颜色
@@ -95,7 +95,7 @@ function generateLayer() {
     if (martix[martix.length-1].some((num)=>num>0)) return false //还有未消除的方块
     martix.pop()
     const layer = new Array(m).fill(0)
-    layer[Math.floor(Math.random()*10)] = -nReward //生成奖励球
+    if (round % 3 == 0) layer[Math.floor(Math.random()*10)] = -nReward //每3层生成奖励球
     for (let j=0; j<m; j++) {
         if (layer[j]<0) continue
         if (Math.random()<pBlock) { //生成方块
@@ -112,6 +112,7 @@ function nextRound() {
     nBlock++
     nReward = Math.floor(round/50) + 1
     round++
+    ballNums++
     if (!generateLayer()) {
         alert('Game Over! score:'+score)
         history.go(0)
