@@ -1,30 +1,45 @@
 const canvas = document.querySelector("canvas")
 const ctx = canvas.getContext("2d")
 
-let WIDTH = 480
-let HEIGHT = Math.floor(WIDTH/3*5)
 const n = 15 //矩阵高
 const m = 10 //矩阵宽
-const blockSize = WIDTH/m
 let ballNums = 0   //发射球的数量
 let balls = new Array() //已发射的球
 let readyBalls = new Array()    //待发射的球
 let pasue = false
 let framcount = 0   //渲染帧计数
 const interval = 3 //小球发射间隔帧数
-let RADIUS = blockSize/6 //球半径
-let vel = 1.5*RADIUS //运动方向上的速度
-let startX = Math.floor(WIDTH/2)    //发射点
-let startY = HEIGHT - RADIUS
-let startColor = "#FFC600"    //发射球的颜色
 const martix = Array.from(new Array(n), ()=>new Array(m).fill(0))
-const deadline = n*blockSize
+let startColor = "#FFC600"    //发射球的颜色
+let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
 
-canvas.width = WIDTH
-canvas.height = HEIGHT
-ctx.fillStyle = "#000"
-ctx.fillRect(0, 0, WIDTH, HEIGHT)
-ctx.strokeStyle = "#eee"
+function dataInit() {
+    // WIDTH = 480
+    // HEIGHT = Math.floor(WIDTH/3*5)
+    //自适应窗口
+    let windowWidth = document.documentElement.clientWidth || document.body.clientWidth
+    let windowHeight = document.documentElement.clientHeight || document.body.clientHeight
+    if (windowHeight/windowWidth>5/3) {
+        WIDTH = Math.floor(windowWidth)
+        HEIGHT = Math.floor(WIDTH/3*5)
+    } else {
+        HEIGHT = Math.floor(windowHeight)
+        WIDTH = Math.floor(HEIGHT/5*3)
+    }
+    // console.log(windowHeight,windowWidth,WIDTH,HEIGHT)
+    canvas.width = WIDTH
+    canvas.height = HEIGHT
+    ctx.fillStyle = "#000"
+    ctx.fillRect(0, 0, WIDTH, HEIGHT)
+    ctx.strokeStyle = "#eee"
+    
+    blockSize = WIDTH/m
+    RADIUS = blockSize/6 //球半径
+    vel = 1.5*RADIUS //运动方向上的速度
+    startX = Math.floor(WIDTH/2)    //发射点
+    startY = HEIGHT - RADIUS
+    deadline = n*blockSize
+}
 
 const blockColor = ['#33691E','#1B5E20','#004D40','#006064','#0D47A1','#1A237E','#311B92','#4A148C','#880E4F','#B71C1C']
 const getBlockColor = (num)=>{
@@ -278,8 +293,8 @@ function shoot(event) {
 }
 
 window.onload = ()=>{
+    dataInit()
     canvas.onclick = shoot
-
     // //test
     // for (let i=0; i<n/2; i++) 
     //     for (let j=0; j<m; j++) {
@@ -289,6 +304,5 @@ window.onload = ()=>{
     //                 else martix[i][j] = 0
     //         }
     //     }
-
     nextRound()
 }
