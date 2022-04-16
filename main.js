@@ -349,15 +349,15 @@ window.onload = ()=>{
     canvas.onclick = shoot
 
     //test
-    for (let i=0; i<n/3; i++) 
-    for (let j=0; j<m; j++) {
-        martix[i][j] = random(-20,20)
-        if (martix[i][j] < 0) {
-            if (Math.random()<0.2) martix[i][j] = -1
-                else martix[i][j] = 0
-        }
-    }
-    ballNums = 10
+    // for (let i=0; i<n/3; i++) 
+    // for (let j=0; j<m; j++) {
+    //     martix[i][j] = random(-20,20)
+    //     if (martix[i][j] < 0) {
+    //         if (Math.random()<0.2) martix[i][j] = -1
+    //             else martix[i][j] = 0
+    //     }
+    // }
+    // ballNums = 10
 
     nextRound()    
 }
