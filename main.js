@@ -86,10 +86,10 @@ function updateView() {
 
 let round = 0 //回合数记录
 let score = 0
-let pBlock = 0.5
+let pBlock = 0.3
 let pReward = 0.2
-let nReward = 1
-let nBlock = 1
+let nReward = 0
+let nBlock = 0
 
 function generateLayer() {
     if (martix[martix.length-1].some((num)=>num>0)) return false //还有未消除的方块
