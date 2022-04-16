@@ -12,18 +12,28 @@ const interval = 3 //小球发射间隔帧数
 const martix = Array.from(new Array(n), ()=>new Array(m).fill(0))
 let startColor = "#FFC600"    //发射球的颜色
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
+let eleBoard, eleRound, eleScore, eleBalls
 
 function dataInit() {
+    eleBoard = document.querySelector('.board')
+    eleRound = document.getElementById('round')
+    eleScore = document.getElementById('score')
+    eleBalls = document.getElementById('balls')
     //自适应窗口
     let windowWidth = document.documentElement.clientWidth || document.body.clientWidth
     let windowHeight = document.documentElement.clientHeight || document.body.clientHeight
-    if (windowHeight/windowWidth>5/3) {
-        WIDTH = Math.floor(windowWidth*0.9)
+    if (windowHeight/windowWidth>5.2/3) {
+        WIDTH = Math.floor(windowWidth)
         HEIGHT = Math.floor(WIDTH/3*5)
-    } else {
-        HEIGHT = Math.floor(windowHeight*0.9)
-        WIDTH = Math.floor(HEIGHT/5*3)
+        eleBoard.style = `width: ${WIDTH}px;`
+    } else {  
+        WIDTH = Math.floor(windowHeight/2)
+        HEIGHT = Math.floor(WIDTH/3*5)
+        eleBoard.style = `width: ${WIDTH}px;` + "border-left: 2px solid #eee;border-right: 2px solid #eee;"
+        document.getElementsByTagName('canvas')[0].style = "border-left: 2px solid #eee;border-right: 2px solid #eee;";
     }
+    document.documentElement.style.fontSize = Math.floor(WIDTH/30) + 'px'
+        
     // WIDTH = 480
     // HEIGHT = Math.floor(WIDTH/3*5)
     // console.log(windowHeight,windowWidth,WIDTH,HEIGHT)
@@ -92,12 +102,15 @@ function updateView() {
     ctx.stroke()
     ctx.closePath()
 
-    ctx.fillStyle = "#ddd"
-    ctx.font= Math.floor(blockSize/3)+"px"+" Arial"
-    ctx.textBaseline = "top"
-    ctx.textAlign = "left"
+    // ctx.fillStyle = "#ddd"
+    // ctx.font= Math.floor(blockSize/3)+"px"+" Arial"
+    // ctx.textBaseline = "top"
+    // ctx.textAlign = "left"
     // ctx.fillText(`Round:${round}   Score:${score}   Balls:${ballNums}`, 0.1*blockSize, deadline+0.1*blockSize)
-    ctx.fillText(`Round:${round}   Score:${score}   Balls:${ballNums}`, 0.1*blockSize, deadline+0.1*blockSize)
+
+    eleRound.innerText = round
+    eleScore.innerText = score
+    eleBalls.innerText = ballNums
 
     if (!pasue) {
         new Ball(startX, startY-RADIUS, RADIUS, 0, 0, startColor).draw()

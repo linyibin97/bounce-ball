@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bounce Ball</title>
     <style>
+        @font-face {
+            font-family: 'iconfont';
+            src: url('iconfont.ttf?t=1650096579539') format('truetype');
+        }
+        .iconfont {
+            font-family: "iconfont" !important;
+            font-style: normal;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
         html, body {
             margin: 0;
             padding: 0;
@@ -16,14 +26,65 @@
             align-items: center;
             justify-content: center;
             background-color: #111;
+            flex-direction: column;
         }
         .wrapper canvas {
-            border: 2px solid #eee;
+            border-bottom: 2px solid #eee;
+            border-top: 2px solid #eee;
+        }
+        .board {
+            font-size: 1rem;
+            line-height: 2rem;
+            height: 2rem;
+            background-color: #000;
+            border-top: 2px solid #eee;
+            color: #eee;
+            display: flex;
+        }
+        .items{
+            flex: 1;
+            font-size: 1rem;
+            height: 2rem;
+            line-height: 2rem;
+            padding-left: 0.5rem;
+        }
+        .items:nth-child(2) {
+            flex-grow: 1.5;
+        }
+        .github {
+            width: 2rem;
+            height: 2rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        a {
+            text-decoration: none;
+            color: #fff;
         }
     </style>
 </head>
 <body>
     <div class="wrapper">
+        <div class="board">
+            <div class="items">
+                <span class="iconfont">&#xe65e;</span>
+                <span>Round</span>
+                <span id="round"></span>
+            </div>
+            <div class="items">
+                <span class="iconfont">&#xe64b;</span>
+                <span>Score</span>                
+                <span id="score"></span>
+            </div>
+            <div class="items">
+                <span class="iconfont">&#xe711;</span>
+                <span>Balls</span>
+                <span id="balls"></span>
+            </div>
+            <div class="github">
+                <a href="https://github.com/linyibin97/bounce-ball"><span class="iconfont">&#xe645;</span></a>
+            </div>
+        </div>
         <canvas></canvas>
     </div>
     <script src="./main.js"></script>
