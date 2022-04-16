@@ -107,8 +107,8 @@ function generateLayer() {
 }
 
 function nextRound() {
-    console.log(score)
-    pBlock = Math.min(0.6, 0.3+0.1*Math.floor(round/50))
+    console.log(score, ballNums, round)
+    pBlock = Math.min(0.6, pBlock+0.02)
     nBlock++
     nReward = Math.floor(round/50) + 1
     round++
