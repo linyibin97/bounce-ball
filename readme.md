@@ -1,7 +1,7 @@
 # 弹弹球
 [Demo](https://linyibin97.github.io/bounce-ball/)
 
-![preview](https://raw.githubusercontent.com/linyibin97/js-ball/master/preview.png)
+![preview](https://raw.githubusercontent.com/linyibin97/bounce-ball/master/preview.png)
 
 ## 玩法
 - 通过发射小球消除方块
