@@ -2,31 +2,28 @@ const canvas = document.querySelector("canvas")
 const ctx = canvas.getContext("2d")
 
 let WIDTH = 480
-let HEIGHT = 800
-
+let HEIGHT = Math.floor(WIDTH/3*5)
+const n = 15 //矩阵高
+const m = 10 //矩阵宽
+const blockSize = WIDTH/m
 let ballNums = 0   //发射球的数量
 let balls = new Array() //已发射的球
 let readyBalls = new Array()    //待发射的球
 let pasue = false
 let framcount = 0   //渲染帧计数
 const interval = 3 //小球发射间隔帧数
-let RADIUS = 8 //球半径
-let vel = 12 //运动方向上的速度
+let RADIUS = blockSize/6 //球半径
+let vel = 1.5*RADIUS //运动方向上的速度
 let startX = Math.floor(WIDTH/2)    //发射点
 let startY = HEIGHT - RADIUS
 let startColor = "#FFC600"    //发射球的颜色
-const n = 15 //矩阵高
-const m = 10 //矩阵宽
 const martix = Array.from(new Array(n), ()=>new Array(m).fill(0))
-const blockSize = WIDTH/m
 const deadline = n*blockSize
 
 canvas.width = WIDTH
 canvas.height = HEIGHT
 ctx.fillStyle = "#000"
 ctx.fillRect(0, 0, WIDTH, HEIGHT)
-ctx.textBaseline = "middle"
-ctx.textAlign = "center"
 ctx.strokeStyle = "#eee"
 
 const blockColor = ['#33691E','#1B5E20','#004D40','#006064','#0D47A1','#1A237E','#311B92','#4A148C','#880E4F','#B71C1C']
@@ -54,6 +51,8 @@ function updateView() {
                 ctx.strokeRect(j * blockSize, i * blockSize, blockSize, blockSize)
                 ctx.fillStyle = "#eee"
                 ctx.font= Math.floor(blockSize/2)+"px"+" Arial"
+                ctx.textBaseline = "middle"
+                ctx.textAlign = "center"
                 ctx.fillText(martix[i][j], (j+0.5) * blockSize, (i+0.5) * blockSize)
             }
             //奖励球
@@ -65,6 +64,8 @@ function updateView() {
                 ctx.closePath()
                 ctx.fillStyle = "#ddd"
                 ctx.font= Math.floor(blockSize/3)+"px"+" Arial"
+                ctx.textBaseline = "middle"
+                ctx.textAlign = "center"
                 ctx.fillText('+'+(-martix[i][j]), (j+0.5) * blockSize, (i+0.5) * blockSize)
             }
         }
@@ -75,6 +76,13 @@ function updateView() {
     ctx.lineTo(WIDTH, deadline)
     ctx.stroke()
     ctx.closePath()
+
+    ctx.fillStyle = "#ddd"
+    ctx.font= Math.floor(blockSize/3)+"px"+" Arial"
+    ctx.textBaseline = "top"
+    ctx.textAlign = "left"
+    ctx.fillText(`Round:${round}   Score:${score}   Balls:${ballNums}`, 0.1*blockSize, deadline+0.1*blockSize)
+
 
     if (!pasue) {
         new Ball(startX, startY-RADIUS, RADIUS, 0, 0, startColor).draw()
@@ -107,7 +115,6 @@ function generateLayer() {
 }
 
 function nextRound() {
-    console.log(score, ballNums, round)
     pBlock = Math.min(0.6, pBlock+0.02)
     nBlock++
     nReward = Math.floor(round/50) + 1
@@ -161,12 +168,12 @@ class Ball {
             this.velX = -this.velX
         } else if (YtoI(y)<n && dx<0 && martix[YtoI(y)][XtoJ(x+dx-r)]>0) {
             martix[YtoI(y)][XtoJ(x+dx-r)]--
-            score += 100
+            score += 10
             this.x = Math.abs(dx) + 2*r - x + 2*(XtoJ(x+dx-r)+1)*blockSize
             this.velX = -this.velX
         } else if (YtoI(y)<n && dx>0 && martix[YtoI(y)][XtoJ(x+dx+r)]>0) {
             martix[YtoI(y)][XtoJ(x+dx+r)]--
-            score += 100
+            score += 10
             this.x = 2*(XtoJ(x+dx+r))*blockSize - 2*r - x - Math.abs(dx)
             this.velX = -this.velX
         } else {
@@ -180,12 +187,12 @@ class Ball {
             this.y = y + dy
         } else if (YtoI(y+dy-r)<n && dy<0 && martix[YtoI(y+dy-r)][XtoJ(x)]>0) {
             martix[YtoI(y+dy-r)][XtoJ(x)]--
-            score += 100
+            score += 10
             this.y = Math.abs(dy) + 2*r - y + 2*(YtoI(y+dy-r)+1)*blockSize
             this.velY = -this.velY
         } else if (YtoI(y+dy+r)<n && dy>0 && martix[YtoI(y+dy+r)][XtoJ(x)]>0) {
             martix[YtoI(y+dy+r)][XtoJ(x)]--
-            score += 100
+            score += 10
             this.y = 2*(YtoI(y+dy+r))*blockSize - 2*r - y - Math.abs(dy)
             this.velY = -this.velY
         } else {
