@@ -6,7 +6,7 @@ const m = 10 //矩阵宽
 let ballNums = 0   //发射球的数量
 let balls = new Array() //已发射的球
 let readyBalls = new Array()    //待发射的球
-let pasue = false
+let shooting = false
 let framcount = 0   //渲染帧计数
 const interval = 3 //小球发射间隔帧数
 const martix = Array.from(new Array(n+5), ()=>new Array(m).fill(0))
@@ -119,7 +119,7 @@ function updateView() {
     eleScore.innerText = score
     eleBalls.innerText = ballNums
 
-    if (!pasue) {
+    if (!shooting) {
         new Ball(startX, startY-RADIUS, RADIUS, 0, 0, startColor).draw()
     } else {
         balls.forEach(ball=>ball.draw())
@@ -197,47 +197,6 @@ class Ball {
             }
         }
 
-        // #region
-        // const i = YtoI(this.y)
-        // const j = XtoJ(this.x)
-        // const x = this.x
-        // const y = this.y
-        // const r = this.r
-        // const a0 = this.a0
-        // const vel = this.vel 
-        // let nextX = x + Math.cos(a0/180*Math.PI)*vel
-        // let nextY = y + Math.sin(a0/180*Math.PI)*vel
-        // if (nextX - r < 0) {
-        //     let x0 = r
-        //     let y0 = y + (x - r) * Math.tan(a0/180*Math.PI)
-        //     let d = vel - Math.sqrt(Math.pow(x0-x,2)+Math.pow(y0-y,2))
-        //     let [x2, y2, a1] = bounce(x0, y0, 0, y0, d, a0)
-        //     nextX = x2
-        //     nextY = y2
-        //     this.a0 = a1
-        // } 
-        // if (nextX + r > WIDTH) {
-        //     let x0 = WIDTH - r
-        //     let y0 = y + (WIDTH - r - x) * Math.tan(a0/180*Math.PI)
-        //     let d = vel - Math.sqrt(Math.pow(x0-x,2)+Math.pow(y0-y,2))
-        //     let [x2, y2, a1] = bounce(x0, y0, WIDTH, y0, d, a0)
-        //     nextX = x2
-        //     nextY = y2
-        //     this.a0 = a1
-        // }
-        // if (nextY - r < 0) {
-        //     let x0 = x + (y - r) / Math.tan(a0/180*Math.PI)
-        //     let y0 = r
-        //     let d = vel - Math.sqrt(Math.pow(x0-x,2)+Math.pow(y0-y,2))
-        //     let [x2, y2, a1] = bounce(x0, y0, x0, 0, d, a0)
-        //     nextX = x2
-        //     nextY = y2
-        //     this.a0 = a1
-        // }
-        // this.x = nextX
-        // this.y = nextY
-        // #endregion
-
         const isBlock = (x, y) => {
             //检测x, y是否不能通过
             if (x<0 || x>WIDTH) return true
@@ -299,9 +258,40 @@ class Ball {
             updateY()
         }
 
-        //对四个角检测
-        if (!bounced) {
+        const distanceOfPointToSegLine = (px,py,x1,y1,x2,y2) => {
+            //点P(px,py) A(x1,y1)B(x2,y2)表示线段
+            //向量法求点到线段最短距离 返回线段上与P距离最小的点和长度
+            const b = getAngel(x2,y2,x1,y1) //AB向量角
+            const a = (getAngel(px,py,x1,y1) - b + 360) % 360 //向量夹角
+            const lPA = distance(px,py,x1,y1)
+            const lPB = distance(px,py,x2,y2)
+            const lAB = distance(x1,y1,x2,y2)
+            const l = lPA*Math.cos(a/180*Math.PI)
+            if (l>0 && l<lAB) {
+                //P在AB方向上的投影在AB内
+                return [
+                    x1+l*Math.cos(b/180*Math.PI),
+                    y1+l*Math.sin(b/180*Math.PI),
+                    lPA*Math.sin(a/180*Math.PI)
+                ]
+            }
+            //返回距离较小的端点
+            if (lPA>lPB) return [x2,y2,lPB]
+                else return [x1,y1,lPA]
+        }
 
+        //对四个角检测
+        const d = [-1]
+        if (!bounced) {
+            let i = YtoI(this.y)
+            let j = XtoJ(this.x)
+            if (0<i && i<n-1 && 0<j && j<m-1) {
+                const lx = j * blockSize
+                const ly = i * blockSize
+                const hx = (j+1) * blockSize
+                const hy = (i+1) * blockSize
+
+            }
         }
 
         this.x = nX
@@ -349,7 +339,7 @@ function loop() {
     }
     else {
         framcount = 0
-        pasue = false
+        shooting = false
         nextRound()
     }
 }
@@ -358,7 +348,7 @@ function shoot(event) {
     // console.log(event.offsetX-startX, event.offsetY-startY, getAngel(event.offsetX, event.offsetY, startX, startY))
     // return
 
-    if (pasue) return
+    if (shooting) return
     //排除角度太小的情况
     if (event.offsetY > deadline) return
         
@@ -373,7 +363,7 @@ function shoot(event) {
         ))
     }
 
-    pasue = true
+    shooting = true
     loop()
 }
 
