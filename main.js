@@ -1,6 +1,5 @@
 const canvas = document.querySelector("canvas")
-const ctx = canvas.getContext("2d")
-
+let ctx
 const n = 15 //矩阵高
 const m = 10 //矩阵宽
 let ballNums = 0   //发射球的数量
@@ -41,8 +40,22 @@ function dataInit() {
     // WIDTH = 480
     // HEIGHT = Math.floor(WIDTH/3*5)
     // console.log(windowHeight,windowWidth,WIDTH,HEIGHT)
-    canvas.width = WIDTH
-    canvas.height = HEIGHT
+
+    //移动端适配
+    const ratio = Math.max(window.devicePixelRatio || 1, 1)
+    canvas.width = WIDTH * ratio
+    canvas.height = HEIGHT * ratio
+    canvas.style.width = WIDTH + 'px'
+    canvas.style.height = HEIGHT + 'px'
+    ctx = canvas.getContext("2d")
+    ctx.scale(ratio,ratio)
+    
+    console.log(ratio,canvas.width,canvas.height)
+
+    // ctx = canvas.getContext("2d")
+    // canvas.width = WIDTH
+
+    
     ctx.fillStyle = "#000"
     ctx.fillRect(0, 0, WIDTH, HEIGHT)
     ctx.strokeStyle = "#eee"
