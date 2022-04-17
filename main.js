@@ -191,12 +191,33 @@ class Ball {
             return [x2, y2, a1]
         }
         const eliminate = (i, j) => {
-            if (0<=j && j<m && 0<=i && i<n) {
+            if (0<=j && j<m && 0<=i && i<n && martix[i][j]>0) {
                 score += 10
                 martix[i][j] = Math.max(0, martix[i][j] - 1)
             }
         }
-
+        const distanceOfPointToSegLine = (px,py,x1,y1,x2,y2) => {
+            //点P(px,py) A(x1,y1)B(x2,y2)表示线段
+            //向量法求点到线段最短距离 返回线段上与P距离最小的点和长度
+            const b = getAngel(x2,y2,x1,y1) //AB向量角
+            const a = (getAngel(px,py,x1,y1) - b + 360) % 360 //向量夹角
+            const lPA = distance(px,py,x1,y1)
+            const lPB = distance(px,py,x2,y2)
+            const lAB = distance(x1,y1,x2,y2)
+            const l = lPA*Math.cos(a/180*Math.PI)
+            if (l>0 && l<lAB) {
+                //P在AB方向上的投影在AB内
+                return [
+                    x1+l*Math.cos(b/180*Math.PI),
+                    y1+l*Math.sin(b/180*Math.PI),
+                    lPA*Math.sin(a/180*Math.PI),
+                    l
+                ]
+            }
+            //返回距离较小的端点
+            if (lPA>lPB) return [x2,y2,lPB,l]
+                else return [x1,y1,lPA,l]
+        }
         const isBlock = (x, y) => {
             //检测x, y是否不能通过
             if (x<0 || x>WIDTH) return true
@@ -205,6 +226,10 @@ class Ball {
         }
         const distance = (x1, y1, x2, y2) => Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2))
         
+
+        let nX = this.x + Math.cos(this.a0/180*Math.PI)*(this.vel)
+        let nY = this.y + Math.sin(this.a0/180*Math.PI)*(this.vel)
+
         const updateX = () => {
             if (nX<this.x && isBlock(nX - this.r, nY)) {
                 // console.log('left')
@@ -240,15 +265,13 @@ class Ball {
             }
         }
         
-        let nX = this.x + Math.cos(this.a0/180*Math.PI)*this.vel
-        let nY = this.y + Math.sin(this.a0/180*Math.PI)*this.vel
-
         // console.log(`
         // (${this.x.toFixed(1)},${this.y.toFixed(1)})
         // (${nX.toFixed(1)},${nY.toFixed(1)})
         // ${this.a0.toFixed(1)}
         // `)
         let bounced = false
+
         // 对边进行检测, 考虑两个方向的先后顺序
         if (Math.abs(nY-this.y)>Math.abs(nX-this.x)) {
             updateY()
@@ -258,31 +281,7 @@ class Ball {
             updateY()
         }
 
-        const distanceOfPointToSegLine = (px,py,x1,y1,x2,y2) => {
-            //点P(px,py) A(x1,y1)B(x2,y2)表示线段
-            //向量法求点到线段最短距离 返回线段上与P距离最小的点和长度
-            const b = getAngel(x2,y2,x1,y1) //AB向量角
-            const a = (getAngel(px,py,x1,y1) - b + 360) % 360 //向量夹角
-            const lPA = distance(px,py,x1,y1)
-            const lPB = distance(px,py,x2,y2)
-            const lAB = distance(x1,y1,x2,y2)
-            const l = lPA*Math.cos(a/180*Math.PI)
-            if (l>0 && l<lAB) {
-                //P在AB方向上的投影在AB内
-                return [
-                    x1+l*Math.cos(b/180*Math.PI),
-                    y1+l*Math.sin(b/180*Math.PI),
-                    lPA*Math.sin(a/180*Math.PI),
-                    l
-                ]
-            }
-            //返回距离较小的端点
-            if (lPA>lPB) return [x2,y2,lPB,l]
-                else return [x1,y1,lPA,l]
-        }
-
         //对四个角检测
-        const d = [-1]
         if (!bounced) {
             let i = YtoI(this.y)
             let j = XtoJ(this.x)
@@ -295,24 +294,49 @@ class Ball {
                 if ((martix[i][j-1]>0)+(martix[i-1][j-1]>0)+(martix[i-1][j]>0)==1) {
                     //左上三格仅有一格为方块 左上坐标(lx,ly)作为碰撞点 近似地认为在距离最小点处发生碰撞
                     const [x0, y0, dis, d] = distanceOfPointToSegLine(lx,ly,this.x,this.y,nX,nY)
-                    if (dis < r) {
+                    if (dis < this.r) {
+                        eliminate(i,j-1)
+                        eliminate(i-1,j-1)
+                        eliminate(i-1,j);
                         [nX, nY, this.a0] = bounce(x0, y0, lx, ly, this.vel-d, this.a0)
                     }
                 }
-
-                //右上
-
-                //右下
-
-                //左下
-
-                
+                if ((martix[i-1][j]>0)+(martix[i-1][j+1]>0)+(martix[i][j+1]>0)==1) {
+                    //右上
+                    const [x0, y0, dis, d] = distanceOfPointToSegLine(hx,ly,this.x,this.y,nX,nY)
+                    if (dis < this.r) {
+                        eliminate(i-1,j)
+                        eliminate(i-1,j+1)
+                        eliminate(i,j+1);
+                        [nX, nY, this.a0] = bounce(x0, y0, hx, ly, this.vel-d, this.a0)
+                    }
+                }
+                if ((martix[i][j+1]>0)+(martix[i+1][j+1]>0)+(martix[i+1][j]>0)==1) {
+                    //右下
+                    const [x0, y0, dis, d] = distanceOfPointToSegLine(hx,hy,this.x,this.y,nX,nY)
+                    if (dis < this.r) {
+                        eliminate(i,j+1)
+                        eliminate(i+1,j+1)
+                        eliminate(i+1,j);
+                        [nX, nY, this.a0] = bounce(x0, y0, hx, hy, this.vel-d, this.a0)
+                    }
+                }
+                if ((martix[i+1][j]>0)+(martix[i+1][j-1]>0)+(martix[i][j-1]>0)==1) {
+                    //左下
+                    const [x0, y0, dis, d] = distanceOfPointToSegLine(lx,hy,this.x,this.y,nX,nY)
+                    if (dis < this.r) {
+                        eliminate(i+1,j)
+                        eliminate(i+1,j-1)
+                        eliminate(i,j-1);
+                        [nX, nY, this.a0] = bounce(x0, y0, lx, hy, this.vel-d, this.a0)
+                    }
+                }
             }
         }
 
         this.x = nX
         this.y = nY
-
+                
 
         //奖励球
         let i = YtoI(this.y)
@@ -351,7 +375,7 @@ function loop() {
     if (balls.length>0 || readyBalls.length>0) {
         updateView()
         if (!dev) requestAnimationFrame(loop)
-        // setTimeout(loop, 500)
+        // setTimeout(loop, 100)
     }
     else {
         framcount = 0
@@ -393,15 +417,15 @@ window.onload = ()=>{
     }
 
     //test
-    // for (let i=0; i<n*0.5; i++) 
-    // for (let j=0; j<m; j++) {
-    //     martix[i][j] = random(-30,20)
-    //     if (martix[i][j] < 0) {
-    //         if (Math.random()<0.1) martix[i][j] = -1
-    //             else martix[i][j] = 0
-    //     }
-    // }
-    // ballNums = 10
+    for (let i=0; i<n*0.5; i++) 
+    for (let j=0; j<m; j++) {
+        martix[i][j] = random(-30,20)
+        if (martix[i][j] < 0) {
+            if (Math.random()<0.1) martix[i][j] = -1
+                else martix[i][j] = 0
+        }
+    }
+    ballNums = 10
 
     nextRound()    
 }
