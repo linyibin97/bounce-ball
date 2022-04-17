@@ -246,15 +246,6 @@ class Ball {
         }
         const distance = (x1, y1, x2, y2) => Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2))
         
-        let nX = this.x + Math.cos(this.a0/180*Math.PI)*this.vel
-        let nY = this.y + Math.sin(this.a0/180*Math.PI)*this.vel
-
-        console.log(`
-        (${this.x.toFixed(1)},${this.y.toFixed(1)})
-        (${nX.toFixed(1)},${nY.toFixed(1)})
-        ${this.a0.toFixed(1)}
-        `    
-        )
         //对边进行检测
         const updateX = () => {
             if (nX<this.x && isBlock(nX - this.r, nY)) {
@@ -287,6 +278,16 @@ class Ball {
             }
         }
         
+        let nX = this.x + Math.cos(this.a0/180*Math.PI)*this.vel
+        let nY = this.y + Math.sin(this.a0/180*Math.PI)*this.vel
+
+        console.log(`
+        (${this.x.toFixed(1)},${this.y.toFixed(1)})
+        (${nX.toFixed(1)},${nY.toFixed(1)})
+        ${this.a0.toFixed(1)}
+        `)
+        
+        // 1帧内碰撞两条边的问题
         if (Math.abs(nY-this.y)>Math.abs(nX-this.x)) {
             updateY()
             updateX()
@@ -388,7 +389,7 @@ window.onload = ()=>{
                 else martix[i][j] = 0
         }
     }
-    ballNums = 0
+    ballNums = 10
 
     nextRound()    
 }
