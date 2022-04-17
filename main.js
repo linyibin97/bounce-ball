@@ -2,7 +2,7 @@ const canvas = document.querySelector("canvas")
 let ctx
 const n = 15 //矩阵高
 const m = 10 //矩阵宽
-let ballNums = 0   //发射球的数量
+let ballNums = 1   //发射球的数量
 let balls = new Array() //已发射的球
 let readyBalls = new Array()    //待发射的球
 let shooting = false
@@ -56,7 +56,7 @@ function dataInit() {
     
     ctx.fillStyle = "#000"
     ctx.fillRect(0, 0, WIDTH, HEIGHT)
-    ctx.strokeStyle = "#eee"
+    
     ctx.textBaseline = "middle"
     ctx.textAlign = "center"
 
@@ -96,6 +96,7 @@ function updateView() {
             if (martix[i][j] > 0) {
                 ctx.fillStyle = getBlockColor(martix[i][j])
                 ctx.fillRect(j * blockSize, i * blockSize, blockSize, blockSize)
+                ctx.strokeStyle = "#eee"
                 ctx.strokeRect(j * blockSize, i * blockSize, blockSize, blockSize)
                 ctx.fillStyle = "#eee"
                 ctx.font= Math.floor(blockSize/2)+"px"+" Arial"
@@ -115,6 +116,7 @@ function updateView() {
         }
     }
 
+    ctx.strokeStyle = "#aaa"
     ctx.beginPath()
     ctx.moveTo(0, deadline)
     ctx.lineTo(WIDTH, deadline)
@@ -147,27 +149,27 @@ function updateView() {
 
 let round = 0 //回合数记录
 let score = 0
-let pBlock = 0.3
+let pBlock = 0.2
 let pReward = 0.1
 let nReward = 0
 let nBlock = 0
 
-function generateLayer() {
-    if (martix[n-1].some((num)=>num>0)) return false //还有未消除的方块
-    martix.pop()
-    const layer = new Array(m).fill(0)
-    if (round % 3 == 0) layer[Math.floor(Math.random()*10)] = -nReward //每3层生成奖励球
-    for (let j=0; j<m; j++) {
-        if (layer[j]<0) continue
-        if (Math.random()<pBlock) { //生成方块
-            layer[j] = nBlock
-        }
-    }
-    martix.unshift(layer)
-    return true
-}
-
 function nextRound() {
+    const generateLayer = () => {
+        if (martix[n-1].some((num)=>num>0)) return false //还有未消除的方块
+        martix.pop()
+        const layer = new Array(m).fill(0)
+        layer[Math.floor(Math.random()*10)] = -nReward //每3层生成奖励球
+        for (let j=0; j<m; j++) {
+            if (layer[j]<0) continue
+            if (Math.random()<=pBlock) { //生成方块
+                layer[j] = nBlock + Math.ceil(random(-nBlock*0.1, nBlock*0.1))
+            }
+        }
+        martix.unshift(layer)
+        return true
+    }
+
     shooting = false
     skipping = false
     canskip = false
@@ -175,11 +177,10 @@ function nextRound() {
         clearTimeout(canskiptimer)
         canskiptimer = null
     }
-    pBlock = Math.min(0.6, pBlock+0.02)
+    pBlock = 0.2+0.5*(1-1/Math.pow(Math.E,(round/50)))
     nBlock++
-    nReward = Math.floor(round/50) + 1
+    nReward = 1
     round++
-    ballNums++
     if (!generateLayer()) {
         alert('Game Over! score:'+score)
         history.go(0)
@@ -420,7 +421,7 @@ window.onload = ()=>{
     //test
     // for (let i=0; i<n*0.5; i++) 
     // for (let j=0; j<m; j++) {
-    //     martix[i][j] = random(-30,20)
+    //     martix[i][j] = random(-30,60)
     //     if (martix[i][j] < 0) {
     //         if (Math.random()<0.1) martix[i][j] = -1
     //             else martix[i][j] = 0
