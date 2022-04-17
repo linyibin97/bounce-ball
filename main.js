@@ -26,15 +26,13 @@ function dataInit() {
     let windowWidth = document.documentElement.clientWidth || document.body.clientWidth
     let windowHeight = document.documentElement.clientHeight || document.body.clientHeight
     if (windowHeight/windowWidth>5.2/3) {
-        WIDTH = Math.floor(windowWidth)
+        WIDTH = Math.floor(windowWidth) - 4
         HEIGHT = Math.floor(WIDTH/3*5)
-        eleBoard.style = `width: ${WIDTH}px;`
     } else {  
         WIDTH = Math.floor(windowHeight/2)
         HEIGHT = Math.floor(WIDTH/3*5)
-        eleBoard.style = `width: ${WIDTH}px;` + "border-left: 2px solid #eee;border-right: 2px solid #eee;"
-        document.getElementsByTagName('canvas')[0].style = "border-left: 2px solid #eee;border-right: 2px solid #eee;";
     }
+    eleBoard.style.width = WIDTH + "px"
     document.documentElement.style.fontSize = Math.floor(WIDTH/30) + 'px'
         
     // WIDTH = 480
@@ -50,7 +48,7 @@ function dataInit() {
     ctx = canvas.getContext("2d")
     ctx.scale(ratio,ratio)
     
-    console.log(ratio,canvas.width,canvas.height)
+    // console.log(ratio,canvas.width,canvas.height)
 
     // ctx = canvas.getContext("2d")
     // canvas.width = WIDTH
