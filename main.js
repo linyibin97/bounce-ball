@@ -172,10 +172,23 @@ class Ball {
     move() {
         const YtoI = (y) => Math.floor(y/blockSize)
         const XtoJ = (x) => Math.floor(x/blockSize)
-        const bounce = (x, r, dx, ex)=> {
-            if (dx>0) ex -= r 
-                else ex += r
-            return ex - ((x + dx) - ex)
+        const getAngel = (tx,ty,sx,sy) => {
+            let dx = tx - sx
+            let dy = ty - sy
+            if (dx == 0 && dy ==0) return 0
+            if (dx == 0) return dy > 0 ? 90 : 270
+            let theta = (Math.atan(dy / dx) / Math.PI * 180).toFixed(12)
+            if (theta >= 0) return dx > 0 ? theta : theta + 180
+            if (theta < 0) return dy < 0 ? theta + 360 : theta + 180
+        }
+        const bounceAngel = (b, a) => 180 + 2*b - a
+        const bounce = (x0, y0, x1, y1, v, a) => {
+            // (x0,y0)圆心 (x1,y2)碰撞点 d运动距离 速度角a
+            let b = getAngel(x1, y1, x0, y0) //碰撞点与圆心连线 与 正x轴夹角
+            let a1 = bounceAngel(b, a)
+            let x2 = x0 + Math.cos(a1/180*Math.PI).toFixed(12) * v
+            let y2 = y0 + Math.sin(a1/180*Math.PI).toFixed(12) * v
+            return [x2, y2, a1]
         }
         const eliminate = (i, j) => {
             if (0<=j && j<m && 0<=i && i<n) {
@@ -188,85 +201,7 @@ class Ball {
         let x = this.x
         let y = this.y
         let r = this.r
-        let dx = this.velX
-        let dy = this.velY
 
-        // #region
-        if (y+dy-r<0) {
-            this.y = bounce(y, r, dy, 0)
-            this.velY = -this.velY
-        } else if (y+dy+r>HEIGHT) {
-            this.y = y + dy
-        } else if (dy<0 && martix[YtoI(y+dy-r)][XtoJ(x)]>0) {
-            eliminate(YtoI(y+dy-r),XtoJ(x))
-            this.y = bounce(y, r, dy, (YtoI(y+dy-r)+1)*blockSize)
-            this.velY = -this.velY
-        } else if (dy>0 && martix[YtoI(y+dy+r)][XtoJ(x)]>0) {
-            eliminate(YtoI(y+dy+r),XtoJ(x))
-            this.y = bounce(y, r, dy, (YtoI(y+dy+r))*blockSize)
-            this.velY = -this.velY
-        } else {
-            this.y = y + dy
-        } 
-        if (x+dx-r<0) {
-            this.x = bounce(x, r, dx, 0)
-            this.velX = -this.velX
-        } else if (x+dx+r>WIDTH) {
-            this.x = bounce(x, r, dx, WIDTH)
-            this.velX = -this.velX
-        } else if (dx<0 && martix[YtoI(y)][XtoJ(x+dx-r)]>0) {
-            eliminate(YtoI(y), XtoJ(x+dx-r)) 
-            this.x = bounce(x, r, dx, (XtoJ(x+dx-r)+1)*blockSize)
-            this.velX = -this.velX
-        } else if (dx>0 && martix[YtoI(y)][XtoJ(x+dx+r)]>0) {
-            eliminate(YtoI(y), XtoJ(x+dx+r))
-            this.x = bounce(x, r, dx, (XtoJ(x+dx+r))*blockSize)
-            this.velX = -this.velX
-        } else {
-            this.x = x + dx
-        }
-        // #endregion
-        
-        // #region
-        // let eLeft = (j == 0 || martix[i][j-1] > 0) ? j * blockSize : -Infinity
-        // let eRight = (j == m-1 || martix[i][j+1] > 0) ? (j + 1) * blockSize : Infinity
-        // if (dx < 0) {
-        //     if (eLeft <= x + dx - r) {
-        //         this.x = x + dx
-        //     } else {
-        //         this.velX = -this.velX
-        //         this.x = bounce(x, r, dx, eLeft)
-        //         eliminate(i, j-1)
-        //     }
-        // } else {
-        //     if (x + dx + r <= eRight) {
-        //         this.x = x + dx
-        //     } else {
-        //         this.velX = -this.velX
-        //         this.x = bounce(x, r, dx, eRight)
-        //         eliminate(i, j+1)
-        //     }
-        // }
-        // let eTop = (i == 0 || martix[i-1][j] > 0) ? i * blockSize : -Infinity
-        // let eBottom = (martix[i+1][j] > 0) ? (i + 1) * blockSize : Infinity
-        // if (dy < 0) {
-        //     if (eTop <= y + dy - r) {
-        //         this.y = y + dy
-        //     } else {
-        //         this.velY = -this.velY
-        //         this.y = bounce(y, r, dy, eTop)
-        //         eliminate(i-1, j)
-        //     }
-        // } else {
-        //     if (y + dy + r <= eBottom) {
-        //         this.y = y + dy
-        //     } else {
-        //         this.velY = -this.velY
-        //         this.y = bounce(y, r, dy, eBottom)
-        //         eliminate(i+1, j)
-        //     }
-        // }
-        // #endregion
 
         //奖励球
         if (0<=i && i<n && 0<=j && j<m && martix[i][j]<0) {
