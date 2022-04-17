@@ -58,6 +58,15 @@ const getBlockColor = (num)=>{
 }
 
 const random = (l,h)=>Math.floor(Math.random()*(h-l)) + l
+const getAngel = (tx,ty,sx,sy) => {
+    let dx = tx - sx
+    let dy = ty - sy
+    if (dx == 0 && dy ==0) return 0
+    if (dx == 0) return dy > 0 ? 90 : 270
+    let theta = (Math.atan(dy / dx) / Math.PI * 180).toFixed(12)
+    if (theta >= 0) return dx > 0 ? theta : theta + 180
+    if (theta < 0) return dy < 0 ? theta + 360 : theta + 180
+}
 
 //更新视图
 function updateView() {
@@ -154,12 +163,12 @@ function nextRound() {
 }
 
 class Ball {
-    constructor(x, y, r, velX, velY, color) {
+    constructor(x, y, r, vel, theta, color) {
         this.x = x
         this.y = y
         this.r = r
-        this.velX = velX
-        this.velY = velY
+        this.vel = vel
+        this.theta = theta
         this.color = color
     }
     draw() {
@@ -172,15 +181,6 @@ class Ball {
     move() {
         const YtoI = (y) => Math.floor(y/blockSize)
         const XtoJ = (x) => Math.floor(x/blockSize)
-        const getAngel = (tx,ty,sx,sy) => {
-            let dx = tx - sx
-            let dy = ty - sy
-            if (dx == 0 && dy ==0) return 0
-            if (dx == 0) return dy > 0 ? 90 : 270
-            let theta = (Math.atan(dy / dx) / Math.PI * 180).toFixed(12)
-            if (theta >= 0) return dx > 0 ? theta : theta + 180
-            if (theta < 0) return dy < 0 ? theta + 360 : theta + 180
-        }
         const bounceAngel = (b, a) => 180 + 2*b - a
         const bounce = (x0, y0, x1, y1, v, a) => {
             // (x0,y0)圆心 (x1,y2)碰撞点 d运动距离 速度角a
@@ -257,20 +257,16 @@ function shoot(event) {
     if (pasue) return
     //排除角度太小的情况
     if (event.offsetY > deadline) return
-    //点击的点 与 发射点（底部中间） 的距离
     
-    const dX = event.offsetX - startX
-    const dY = event.offsetY - startY
-    const velX = vel * dX / Math.sqrt(dX*dX + dY*dY)
-    const velY = vel * dY / Math.sqrt(dX*dX + dY*dY)
+   
     
     for (let i=0; i<ballNums; i++) {
         readyBalls.unshift(new Ball(
             startX,
             startY,
             RADIUS,
-            velX,
-            velY,
+            vel,
+            getAngel(event.offsetX, event.offsetY, startX, startY),
             i==0? startColor : `rgb(${random(32, 255)},${random(32, 255)},${random(32, 255)})`
         ))
     }
