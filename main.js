@@ -246,16 +246,17 @@ class Ball {
         }
         const distance = (x1, y1, x2, y2) => Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2))
         
-        //对边进行检测
         const updateX = () => {
             if (nX<this.x && isBlock(nX - this.r, nY)) {
-                console.log('left')
+                // console.log('left')
+                bounced = true
                 eliminate(YtoI(nY),XtoJ(nX-this.r))
                 const x0 = (XtoJ(nX-this.r)+1)*blockSize + this.r
                 const y0 = nY + (x0 - nX) * Math.tan(this.a0/180*Math.PI);
                 [nX, nY, this.a0] = bounce(x0, y0, x0-this.r, y0, distance(x0, y0, nX, nY), this.a0)
             } else if (nX>this.x && isBlock(nX + this.r, nY)) {
-                console.log('right')
+                // console.log('right')
+                bounced = true
                 eliminate(YtoI(nY),XtoJ(nX+this.r))
                 const x0 = (XtoJ(nX+this.r))*blockSize - this.r
                 const y0 = nY + (x0 - nX) * Math.tan(this.a0/180*Math.PI);
@@ -264,13 +265,15 @@ class Ball {
         }
         const updateY = ()=> {
             if (nY>this.y && isBlock(nX, nY + this.r)) {
-                console.log('bottom')
+                // console.log('bottom')
+                bounced = true
                 eliminate(YtoI(nY+this.r),XtoJ(nX))
                 const y0 = (YtoI(nY+this.r))*blockSize - this.r
                 const x0 = nX + (y0 - nY) / Math.tan(this.a0/180*Math.PI);
                 [nX, nY, this.a0] = bounce(x0, y0, x0, y0+this.r, distance(x0, y0, nX, nY), this.a0)
             } else if (nY<this.y && isBlock(nX, nY - this.r)) {
-                console.log('top')
+                // console.log('top')
+                bounced = true
                 eliminate(YtoI(nY-this.r),XtoJ(nX))
                 const y0 = (YtoI(nY-this.r)+1)*blockSize + this.r
                 const x0 = nX + (y0 - nY) / Math.tan(this.a0/180*Math.PI);
@@ -281,13 +284,13 @@ class Ball {
         let nX = this.x + Math.cos(this.a0/180*Math.PI)*this.vel
         let nY = this.y + Math.sin(this.a0/180*Math.PI)*this.vel
 
-        console.log(`
-        (${this.x.toFixed(1)},${this.y.toFixed(1)})
-        (${nX.toFixed(1)},${nY.toFixed(1)})
-        ${this.a0.toFixed(1)}
-        `)
-        
-        // 1帧内碰撞两条边的问题
+        // console.log(`
+        // (${this.x.toFixed(1)},${this.y.toFixed(1)})
+        // (${nX.toFixed(1)},${nY.toFixed(1)})
+        // ${this.a0.toFixed(1)}
+        // `)
+        let bounced = false
+        // 对边进行检测, 考虑两个方向的先后顺序
         if (Math.abs(nY-this.y)>Math.abs(nX-this.x)) {
             updateY()
             updateX()
@@ -297,6 +300,9 @@ class Ball {
         }
 
         //对四个角检测
+        if (!bounced) {
+            
+        }
 
         this.x = nX
         this.y = nY
