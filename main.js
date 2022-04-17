@@ -6,7 +6,7 @@ const m = 10 //矩阵宽
 let ballNums = 0   //发射球的数量
 let balls = new Array() //已发射的球
 let readyBalls = new Array()    //待发射的球
-let pasue = false
+let shooting = false
 let framcount = 0   //渲染帧计数
 const interval = 3 //小球发射间隔帧数
 const martix = Array.from(new Array(n+5), ()=>new Array(m).fill(0))
@@ -14,6 +14,7 @@ let startColor = "#FFC600"    //发射球的颜色
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
 let eleBoard, eleRound, eleScore, eleBalls
 const dev = false //调试模式
+let  skipping = false
 
 function dataInit() {
     eleBoard = document.querySelector('.board')
@@ -43,7 +44,9 @@ function dataInit() {
     ctx.fillStyle = "#000"
     ctx.fillRect(0, 0, WIDTH, HEIGHT)
     ctx.strokeStyle = "#eee"
-    
+    ctx.textBaseline = "middle"
+    ctx.textAlign = "center"
+
     blockSize = WIDTH/m
     RADIUS = blockSize/6 //球半径
     vel = 1.5*RADIUS //运动方向上的速度
@@ -83,8 +86,6 @@ function updateView() {
                 ctx.strokeRect(j * blockSize, i * blockSize, blockSize, blockSize)
                 ctx.fillStyle = "#eee"
                 ctx.font= Math.floor(blockSize/2)+"px"+" Arial"
-                ctx.textBaseline = "middle"
-                ctx.textAlign = "center"
                 ctx.fillText(martix[i][j], (j+0.5) * blockSize, (i+0.5) * blockSize)
             }
             //奖励球
@@ -96,8 +97,6 @@ function updateView() {
                 ctx.closePath()
                 ctx.fillStyle = "#ddd"
                 ctx.font= Math.floor(blockSize/3)+"px"+" Arial"
-                ctx.textBaseline = "middle"
-                ctx.textAlign = "center"
                 ctx.fillText('+'+(-martix[i][j]), (j+0.5) * blockSize, (i+0.5) * blockSize)
             }
         }
@@ -109,6 +108,13 @@ function updateView() {
     ctx.stroke()
     ctx.closePath()
 
+    if (shooting && !skipping) {
+        ctx.fillStyle = "#ddd"
+        ctx.font= Math.floor(blockSize/2)+"px"+" Arial"
+        ctx.fillText('click here to skip', WIDTH/2, (HEIGHT+(n*blockSize))/2)
+        
+    }
+
     // ctx.fillStyle = "#ddd"
     // ctx.font= Math.floor(blockSize/3)+"px"+" Arial"
     // ctx.textBaseline = "top"
@@ -119,7 +125,7 @@ function updateView() {
     eleScore.innerText = score
     eleBalls.innerText = ballNums
 
-    if (!pasue) {
+    if (!shooting) {
         new Ball(startX, startY-RADIUS, RADIUS, 0, 0, startColor).draw()
     } else {
         balls.forEach(ball=>ball.draw())
@@ -344,24 +350,33 @@ function loop() {
 
     if (balls.length>0 || readyBalls.length>0) {
         updateView()
-        if (!dev) requestAnimationFrame(loop)
-        // setTimeout(loop, 500)
+        if (skipping) {
+            loop()
+        } else {
+            requestAnimationFrame(loop)
+            // setTimeout(loop, 500)
+        }
     }
     else {
         framcount = 0
-        pasue = false
+        shooting = false
+        skipping = false
         nextRound()
     }
 }
 
-function shoot(event) {
+function handleClick(event) {
     // console.log(event.offsetX-startX, event.offsetY-startY, getAngel(event.offsetX, event.offsetY, startX, startY))
     // return
+    
+    if (event.offsetY > deadline) {
+        if (shooting) {
+            skipping = true
+        }
+        return
+    }
+    if (shooting) return
 
-    if (pasue) return
-    //排除角度太小的情况
-    if (event.offsetY > deadline) return
-        
     for (let i=0; i<ballNums; i++) {
         readyBalls.unshift(new Ball(
             startX,
@@ -373,18 +388,13 @@ function shoot(event) {
         ))
     }
 
-    pasue = true
+    shooting = true
     loop()
 }
 
 window.onload = ()=>{
     dataInit()
-    canvas.onclick = shoot
-    document.body.onkeyup = ()=>{
-        if (dev && (readyBalls.length>0 || balls.length>0)) {
-            loop()
-        }
-    }
+    canvas.onclick = handleClick
 
     //test
     // for (let i=0; i<n*0.5; i++) 
