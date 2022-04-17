@@ -301,7 +301,7 @@ class Ball {
 
         //对四个角检测
         if (!bounced) {
-            
+
         }
 
         this.x = nX
@@ -387,15 +387,15 @@ window.onload = ()=>{
     }
 
     //test
-    for (let i=0; i<n*0.5; i++) 
-    for (let j=0; j<m; j++) {
-        martix[i][j] = random(-30,20)
-        if (martix[i][j] < 0) {
-            if (Math.random()<0.1) martix[i][j] = -1
-                else martix[i][j] = 0
-        }
-    }
-    ballNums = 10
+    // for (let i=0; i<n*0.5; i++) 
+    // for (let j=0; j<m; j++) {
+    //     martix[i][j] = random(-30,20)
+    //     if (martix[i][j] < 0) {
+    //         if (Math.random()<0.1) martix[i][j] = -1
+    //             else martix[i][j] = 0
+    //     }
+    // }
+    // ballNums = 10
 
     nextRound()    
 }
