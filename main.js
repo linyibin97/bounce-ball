@@ -183,7 +183,7 @@ class Ball {
         const YtoI = (y) => Math.floor(y/blockSize)
         const XtoJ = (x) => Math.floor(x/blockSize)
         const bounce = (x0, y0, x1, y1, d, a) => {
-            // 碰撞时的圆心(x0,y0) 碰撞点 (x1,y2) 反弹运动距离d 速度角a
+            // 碰撞时的圆心(x0,y0) 碰撞点 (x1,y1) 反弹运动距离d 速度角a
             let b = getAngel(x1, y1, x0, y0) //碰撞点与圆心连线 与 正x轴夹角
             let a1 = ((180 + 2 * b - a) + 360) % 360
             let x2 = x0 + d * Math.cos(a1/180*Math.PI) 
@@ -259,8 +259,8 @@ class Ball {
         }
 
         const distanceOfPointToSegLine = (px,py,x1,y1,x2,y2) => {
-            //点P(px,py)  AB(x1,y1)(x2,y2)表示线段
-            //向量法求点到线段最短距离 返回线段与P的最小距离
+            //点P(px,py) A(x1,y1)B(x2,y2)表示线段
+            //向量法求点到线段最短距离 返回线段上与P距离最小的点和长度
             const b = getAngel(x2,y2,x1,y1) //AB向量角
             const a = (getAngel(px,py,x1,y1) - b + 360) % 360 //向量夹角
             const lPA = distance(px,py,x1,y1)
@@ -269,10 +269,16 @@ class Ball {
             const l = lPA*Math.cos(a/180*Math.PI)
             if (l>0 && l<lAB) {
                 //P在AB方向上的投影在AB内
-                return Math.abs(lPA*Math.sin(a/180*Math.PI))
+                return [
+                    x1+l*Math.cos(b/180*Math.PI),
+                    y1+l*Math.sin(b/180*Math.PI),
+                    lPA*Math.sin(a/180*Math.PI),
+                    l
+                ]
             }
-            //返回较小的距离
-            return Math.min(lPA, lPB)
+            //返回距离较小的端点
+            if (lPA>lPB) return [x2,y2,lPB,l]
+                else return [x1,y1,lPA,l]
         }
 
         //对四个角检测
@@ -286,10 +292,11 @@ class Ball {
                 const hx = (j+1) * blockSize
                 const hy = (i+1) * blockSize
 
-                if ((martix[i][j-1]>0)+(martix[i-1][j-1]>0)+(martix[i-1][j]>0)==3) {
-                    //左上三格仅有一格为方块
-                    if (distanceOfPointToSegLine(lx,ly,this.x,this.y,nx,ny) < r) {
-                        // [nX, nY, this.a0] = bounce(, , , , , this.a0)
+                if ((martix[i][j-1]>0)+(martix[i-1][j-1]>0)+(martix[i-1][j]>0)==1) {
+                    //左上三格仅有一格为方块 左上坐标(lx,ly)作为碰撞点 近似地认为在距离最小点处发生碰撞
+                    const [x0, y0, dis, d] = distanceOfPointToSegLine(lx,ly,this.x,this.y,nX,nY)
+                    if (dis < r) {
+                        [nX, nY, this.a0] = bounce(x0, y0, lx, ly, this.vel-d, this.a0)
                     }
                 }
 
