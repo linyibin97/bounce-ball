@@ -63,7 +63,7 @@ const getAngel = (tx,ty,sx,sy) => {
     let dy = ty - sy
     if (dx == 0 && dy ==0) return 0
     if (dx == 0) return dy > 0 ? 90 : 270
-    let theta = (Math.atan(dy / dx) / Math.PI * 180).toFixed(12)
+    let theta = (Math.atan(dy / dx) / Math.PI * 180)
     if (theta >= 0) return dx > 0 ? theta : theta + 180
     if (theta < 0) return dy < 0 ? theta + 360 : theta + 180
 }
@@ -181,13 +181,12 @@ class Ball {
     move() {
         const YtoI = (y) => Math.floor(y/blockSize)
         const XtoJ = (x) => Math.floor(x/blockSize)
-        const bounceAngel = (b, a) => 180 + 2*b - a
         const bounce = (x0, y0, x1, y1, d, a) => {
             // 碰撞时的圆心(x0,y0) 碰撞点 (x1,y2) 反弹运动距离d 速度角a
             let b = getAngel(x1, y1, x0, y0) //碰撞点与圆心连线 与 正x轴夹角
-            let a1 = bounceAngel(b, a)
-            let x2 = x0 + Math.cos(a1/180*Math.PI).toFixed(12) * d
-            let y2 = y0 + Math.sin(a1/180*Math.PI).toFixed(12) * d
+            let a1 = 180 + 2*b - a
+            let x2 = x0 + Math.cos(a1/180*Math.PI) * d
+            let y2 = y0 + Math.sin(a1/180*Math.PI) * d
             return [x2, y2, a1]
         }
         const eliminate = (i, j) => {
@@ -204,35 +203,35 @@ class Ball {
         const a0 = this.theta
         const vel = this.vel 
 
-        let nextX = x + Math.cos(a0/180*Math.PI).toFixed(12)*vel
-        let nextY = y + Math.sin(a0/180*Math.PI).toFixed(12)*vel
+        let nextX = x + Math.cos(a0/180*Math.PI)*vel
+        let nextY = y + Math.sin(a0/180*Math.PI)*vel
 
         if (nextX - r < 0) {
             let x0 = r
-            let y0 = y + (x - r) * Math.tan(a0/180*Math.PI).toFixed(12)
+            let y0 = y + (x - r) * Math.tan(a0/180*Math.PI)
             let d = vel - Math.sqrt(Math.pow(x0-x,2)+Math.pow(y0-y,2))
             let [x2, y2, a1] = bounce(x0, y0, 0, y0, d, a0)
             nextX = x2
             nextY = y2
-            this.a0 = a1
+            this.theta = a1
         } 
         if (nextX + r > WIDTH) {
             let x0 = WIDTH - r
-            let y0 = y + (WIDTH - r - x) * Math.tan(a0/180*Math.PI).toFixed(12)
+            let y0 = y + (WIDTH - r - x) * Math.tan(a0/180*Math.PI)
             let d = vel - Math.sqrt(Math.pow(x0-x,2)+Math.pow(y0-y,2))
             let [x2, y2, a1] = bounce(x0, y0, WIDTH, y0, d, a0)
             nextX = x2
             nextY = y2
-            this.a0 = a1
+            this.theta = a1
         }
         if (nextY - r < 0) {
-            let x0 = x + (y - r) / Math.tan(a0/180*Math.PI).toFixed(12)
+            let x0 = x + (y - r) / Math.tan(a0/180*Math.PI)
             let y0 = r
             let d = vel - Math.sqrt(Math.pow(x0-x,2)+Math.pow(y0-y,2))
             let [x2, y2, a1] = bounce(x0, y0, x0, 0, d, a0)
             nextX = x2
             nextY = y2
-            this.a0 = a1
+            this.theta = a1
         }
         this.x = nextX
         this.y = nextY
@@ -285,9 +284,9 @@ function loop() {
 }
 
 function shoot(event) {
-    // console.log(YtoI(event.offsetY),XtoJ(event.offsetX))
-    // console.log(event.offsetY,HEIGHT)
+    // console.log(event.offsetX-startX, event.offsetY-startY, getAngel(event.offsetX, event.offsetY, startX, startY))
     // return
+
     if (pasue) return
     //排除角度太小的情况
     if (event.offsetY > deadline) return
