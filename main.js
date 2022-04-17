@@ -182,12 +182,12 @@ class Ball {
         const YtoI = (y) => Math.floor(y/blockSize)
         const XtoJ = (x) => Math.floor(x/blockSize)
         const bounceAngel = (b, a) => 180 + 2*b - a
-        const bounce = (x0, y0, x1, y1, v, a) => {
-            // (x0,y0)圆心 (x1,y2)碰撞点 d运动距离 速度角a
+        const bounce = (x0, y0, x1, y1, d, a) => {
+            // 碰撞时的圆心(x0,y0) 碰撞点 (x1,y2) 反弹运动距离d 速度角a
             let b = getAngel(x1, y1, x0, y0) //碰撞点与圆心连线 与 正x轴夹角
             let a1 = bounceAngel(b, a)
-            let x2 = x0 + Math.cos(a1/180*Math.PI).toFixed(12) * v
-            let y2 = y0 + Math.sin(a1/180*Math.PI).toFixed(12) * v
+            let x2 = x0 + Math.cos(a1/180*Math.PI).toFixed(12) * d
+            let y2 = y0 + Math.sin(a1/180*Math.PI).toFixed(12) * d
             return [x2, y2, a1]
         }
         const eliminate = (i, j) => {
@@ -196,12 +196,46 @@ class Ball {
                 martix[i][j] = Math.max(0, martix[i][j] - 1)
             }
         }
-        let i = YtoI(this.y)
-        let j = XtoJ(this.x)
-        let x = this.x
-        let y = this.y
-        let r = this.r
+        const i = YtoI(this.y)
+        const j = XtoJ(this.x)
+        const x = this.x
+        const y = this.y
+        const r = this.r
+        const a0 = this.theta
+        const vel = this.vel 
 
+        let nextX = x + Math.cos(a0/180*Math.PI).toFixed(12)*vel
+        let nextY = y + Math.sin(a0/180*Math.PI).toFixed(12)*vel
+
+        if (nextX - r < 0) {
+            let x0 = r
+            let y0 = y + (x - r) * Math.tan(a0/180*Math.PI).toFixed(12)
+            let d = vel - Math.sqrt(Math.pow(x0-x,2)+Math.pow(y0-y,2))
+            let [x2, y2, a1] = bounce(x0, y0, 0, y0, d, a0)
+            nextX = x2
+            nextY = y2
+            this.a0 = a1
+        } 
+        if (nextX + r > WIDTH) {
+            let x0 = WIDTH - r
+            let y0 = y + (WIDTH - r - x) * Math.tan(a0/180*Math.PI).toFixed(12)
+            let d = vel - Math.sqrt(Math.pow(x0-x,2)+Math.pow(y0-y,2))
+            let [x2, y2, a1] = bounce(x0, y0, WIDTH, y0, d, a0)
+            nextX = x2
+            nextY = y2
+            this.a0 = a1
+        }
+        if (nextY - r < 0) {
+            let x0 = x + (y - r) / Math.tan(a0/180*Math.PI).toFixed(12)
+            let y0 = r
+            let d = vel - Math.sqrt(Math.pow(x0-x,2)+Math.pow(y0-y,2))
+            let [x2, y2, a1] = bounce(x0, y0, x0, 0, d, a0)
+            nextX = x2
+            nextY = y2
+            this.a0 = a1
+        }
+        this.x = nextX
+        this.y = nextY
 
         //奖励球
         if (0<=i && i<n && 0<=j && j<m && martix[i][j]<0) {
