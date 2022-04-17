@@ -163,12 +163,12 @@ function nextRound() {
 }
 
 class Ball {
-    constructor(x, y, r, vel, theta, color) {
+    constructor(x, y, r, vel, a0, color) {
         this.x = x
         this.y = y
         this.r = r
         this.vel = vel
-        this.theta = theta
+        this.a0 = a0
         this.color = color
     }
     draw() {
@@ -195,17 +195,17 @@ class Ball {
                 martix[i][j] = Math.max(0, martix[i][j] - 1)
             }
         }
+
+        // #beginregion
         const i = YtoI(this.y)
         const j = XtoJ(this.x)
         const x = this.x
         const y = this.y
         const r = this.r
-        const a0 = this.theta
+        const a0 = this.a0
         const vel = this.vel 
-
         let nextX = x + Math.cos(a0/180*Math.PI)*vel
         let nextY = y + Math.sin(a0/180*Math.PI)*vel
-
         if (nextX - r < 0) {
             let x0 = r
             let y0 = y + (x - r) * Math.tan(a0/180*Math.PI)
@@ -213,7 +213,7 @@ class Ball {
             let [x2, y2, a1] = bounce(x0, y0, 0, y0, d, a0)
             nextX = x2
             nextY = y2
-            this.theta = a1
+            this.a0 = a1
         } 
         if (nextX + r > WIDTH) {
             let x0 = WIDTH - r
@@ -222,7 +222,7 @@ class Ball {
             let [x2, y2, a1] = bounce(x0, y0, WIDTH, y0, d, a0)
             nextX = x2
             nextY = y2
-            this.theta = a1
+            this.a0 = a1
         }
         if (nextY - r < 0) {
             let x0 = x + (y - r) / Math.tan(a0/180*Math.PI)
@@ -231,10 +231,11 @@ class Ball {
             let [x2, y2, a1] = bounce(x0, y0, x0, 0, d, a0)
             nextX = x2
             nextY = y2
-            this.theta = a1
+            this.a0 = a1
         }
         this.x = nextX
         this.y = nextY
+        // #endregion
 
         //奖励球
         if (0<=i && i<n && 0<=j && j<m && martix[i][j]<0) {
@@ -270,11 +271,10 @@ function loop() {
             return false
     })
 
-
-
     if (balls.length>0 || readyBalls.length>0) {
         updateView()
         requestAnimationFrame(loop)
+        // setTimeout(loop, 1000)
     }
     else {
         framcount = 0
