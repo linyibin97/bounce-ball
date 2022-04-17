@@ -14,7 +14,9 @@ let startColor = "#FFC600"    //发射球的颜色
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
 let eleBoard, eleRound, eleScore, eleBalls
 const dev = false //调试模式
-let  skipping = false
+let skipping = false
+let canskip = false
+let canskiptimer = null
 
 function dataInit() {
     eleBoard = document.querySelector('.board')
@@ -108,11 +110,10 @@ function updateView() {
     ctx.stroke()
     ctx.closePath()
 
-    if (shooting && !skipping) {
+    if (shooting && canskip && !skipping) {
         ctx.fillStyle = "#ddd"
         ctx.font= Math.floor(blockSize/2)+"px"+" Arial"
-        ctx.fillText('click here to skip', WIDTH/2, (HEIGHT+(n*blockSize))/2)
-        
+        ctx.fillText('click here to skip', WIDTH/2, (HEIGHT+(n*blockSize))/2) 
     }
 
     // ctx.fillStyle = "#ddd"
@@ -156,6 +157,13 @@ function generateLayer() {
 }
 
 function nextRound() {
+    shooting = false
+    skipping = false
+    canskip = false
+    if (canskiptimer) {
+        clearTimeout(canskiptimer)
+        canskiptimer = null
+    }
     pBlock = Math.min(0.6, pBlock+0.02)
     nBlock++
     nReward = Math.floor(round/50) + 1
@@ -359,8 +367,6 @@ function loop() {
     }
     else {
         framcount = 0
-        shooting = false
-        skipping = false
         nextRound()
     }
 }
@@ -370,7 +376,7 @@ function handleClick(event) {
     // return
     
     if (event.offsetY > deadline) {
-        if (shooting) {
+        if (shooting && canskip) {
             skipping = true
         }
         return
@@ -389,6 +395,10 @@ function handleClick(event) {
     }
 
     shooting = true
+    canskiptimer = setTimeout(()=>{
+        canskip = true
+        canskiptimer = null
+    },10000) //十秒后可跳过
     loop()
 }
 
