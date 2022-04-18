@@ -14,6 +14,12 @@
             font-style: normal;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
         html, body {
             margin: 0;
@@ -46,16 +52,14 @@
             font-size: 1rem;
             height: 2.5rem;
             line-height: 2.5rem;
-            padding-left: 0.5rem;
+            text-align: center;
         }
-        .items:nth-child(2) {
-            flex-grow: 1.5;
-        }
-        .github {
-            width: 2rem;
-            height: 2rem;
+        .iconitem {
+            width: 2.5rem;
+            height: 2.5rem;
             font-size: 1.5rem;
             cursor: pointer;
+            text-align: center;
         }
         a {
             text-decoration: none;
@@ -66,6 +70,9 @@
 <body>
     <div class="wrapper">
         <div class="board">
+            <div class="iconitem">
+                <a href="https://github.com/linyibin97/bounce-ball"><span class="iconfont">&#xe645;</span></a>
+            </div>
             <div class="items">
                 <span class="iconfont">&#xe65e;</span>
                 <span>Round</span>
@@ -78,11 +85,11 @@
             </div>
             <div class="items">
                 <span class="iconfont">&#xe711;</span>
-                <span>Balls</span>
+                <span>×</span>   
                 <span id="balls"></span>
             </div>
-            <div class="github">
-                <a href="https://github.com/linyibin97/bounce-ball"><span class="iconfont">&#xe645;</span></a>
+            <div class="iconitem" onclick="replay()">
+               <span class="iconfont">&#xe6a4;</span>               
             </div>
         </div>
         <canvas></canvas>

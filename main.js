@@ -1,24 +1,17 @@
-const canvas = document.querySelector("canvas")
-let ctx
 const n = 15 //矩阵高
 const m = 10 //矩阵宽
-let ballNums = 1   //发射球的数量
-let balls = new Array() //已发射的球
-let readyBalls = new Array()    //待发射的球
-let shooting = false
-let framcount = 0   //渲染帧计数
 const interval = 3 //小球发射间隔帧数
-const martix = Array.from(new Array(n+5), ()=>new Array(m).fill(0))
-let startColor = "#FFC600"    //发射球的颜色
+
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
-let eleBoard, eleRound, eleScore, eleBalls
-const dev = false //调试模式
-let skipping = false
-let canskip = false
-let canskiptimer = null
+let shooting, skipping, canskip, canskiptimer, framcount, startColor
+let canvas, ctx, eleBoard, eleRound, eleScore, eleBalls
+let ballNums, readyBalls, balls
+let round, score, nReward, martix
 
 function dataInit() {
     eleBoard = document.querySelector('.board')
+    canvas = document.querySelector("canvas")
+
     eleRound = document.getElementById('round')
     eleScore = document.getElementById('score')
     eleBalls = document.getElementById('balls')
@@ -53,10 +46,8 @@ function dataInit() {
     // ctx = canvas.getContext("2d")
     // canvas.width = WIDTH
 
-    
     ctx.fillStyle = "#000"
-    ctx.fillRect(0, 0, WIDTH, HEIGHT)
-    
+    ctx.fillRect(0, 0, WIDTH, HEIGHT)    
     ctx.textBaseline = "middle"
     ctx.textAlign = "center"
 
@@ -66,6 +57,24 @@ function dataInit() {
     startX = Math.floor(WIDTH/2)    //发射点
     startY = HEIGHT - RADIUS
     deadline = n*blockSize
+    startColor = "#FFC600"    //发射球的颜色
+
+    //运行状态
+    shooting = false
+    skipping = false
+    canskip = false
+    canskiptimer = null
+    framcount = 0   //渲染帧计数 
+
+    ballNums = 1   //发射球的数量
+    balls = new Array() //已发射的球
+    readyBalls = new Array()    //待发射的球
+
+    //回合相关数据
+    martix = Array.from(new Array(n+5), ()=>new Array(m).fill(0))
+    round = 0 //回合数记录
+    score = 0 //得分
+    nReward = 1
 }
 
 const blockColor = ['#33691E','#1B5E20','#004D40','#006064','#0D47A1','#1A237E','#311B92','#4A148C','#880E4F','#B71C1C']
@@ -147,29 +156,22 @@ function updateView() {
     
 }
 
-let round = 0 //回合数记录
-let score = 0
-let pBlock = 0.2
-let pReward = 0.1
-let nReward = 0
-let nBlock = 0
-
 function nextRound() {
-    const generateLayer = () => {
+    const generateLayer = (pBlock) => {
         if (martix[n-1].some((num)=>num>0)) return false //还有未消除的方块
         martix.pop()
         const layer = new Array(m).fill(0)
-        layer[Math.floor(Math.random()*10)] = -nReward //每3层生成奖励球
+        layer[Math.floor(Math.random()*10)] = -nReward //生成奖励球
         for (let j=0; j<m; j++) {
             if (layer[j]<0) continue
             if (Math.random()<=pBlock) { //生成方块
-                layer[j] = nBlock + random(Math.ceil(-nBlock*0.1), Math.floor(nBlock*0.1))
+                layer[j] = round + random(Math.ceil(-round*0.1), Math.floor(round*0.1))
             }
         }
         martix.unshift(layer)
         return true
     }
-
+    framcount = 0
     shooting = false
     skipping = false
     canskip = false
@@ -177,15 +179,18 @@ function nextRound() {
         clearTimeout(canskiptimer)
         canskiptimer = null
     }
-    pBlock = 0.3+0.4*(1-1/Math.pow(Math.E,(round/50)))
-    nBlock++
-    nReward = 1
+
     round++
-    if (!generateLayer()) {
-        alert('Game Over! score:'+score)
-        history.go(0)
+    
+    if (!generateLayer(0.3+0.4*(1-1/Math.pow(Math.E,(round/50))))) {
+        gameOver()
         return
     }
+
+    if (window.localStorage) {
+        window.localStorage.setItem('gamedata', JSON.stringify({martix, round, score}))
+    }
+
     updateView()
 }
 
@@ -345,7 +350,6 @@ class Ball {
 }
 
 // let prev = 0
-
 function loop() {
     // let curr = Date.now()
     // if (curr-prev>18) console.log(curr-prev)
@@ -378,7 +382,6 @@ function loop() {
         }
     }
     else {
-        framcount = 0
         nextRound()
     }
 }
@@ -414,8 +417,25 @@ function handleClick(event) {
     loop()
 }
 
+function gameOver() {
+    alert('Game Over! score:'+score)
+    replay()
+}
+
+function replay() {
+    if (window.localStorage) {
+        window.localStorage.removeItem('gamedata')
+    }
+    martix = Array.from(new Array(n+5), ()=>new Array(m).fill(0))
+    round = 0 //回合数记录
+    score = 0 //得分
+    nextRound() 
+}
+
 window.onload = ()=>{
     dataInit()
+    
+
     canvas.onclick = handleClick
 
     //test
@@ -428,6 +448,13 @@ window.onload = ()=>{
     //     }
     // }
     // ballNums = 10
-
-    nextRound()    
+    if (window.localStorage && localStorage.getItem('gamedata')) {
+        let data = JSON.parse(localStorage.getItem('gamedata'))
+        martix = data.martix
+        round = data.round
+        score = data.score
+        updateView()
+    } else {
+        nextRound()  
+    }  
 }
