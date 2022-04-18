@@ -352,13 +352,11 @@ class Ball {
             let nx = this.x + Math.cos(this.a0/180*Math.PI)*d
             let ny = this.y + Math.sin(this.a0/180*Math.PI)*d
 
-            let edgePoints = [] //与边的碰撞点
-            let cornerPoints = [] //与角的碰撞点
-
             let path = new Line(this.x, this.y, nx, ny)
 
             let collisionPoint = null
 
+            //判断与边的交点
             for (let k=0; k<8; k++) {
                 if (!bounced[k] && isBlockIJ(i+next[k][0], j+next[k][0])) {
                     let points = getLinesIntersection(i, j, i+next[k][0], j+next[k][0], this.r, k, path)
