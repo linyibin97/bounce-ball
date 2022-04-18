@@ -8,13 +8,66 @@ let canvas, ctx, eleBoard, eleRound, eleScore, eleBalls
 let ballNums, readyBalls, balls
 let round, score, nReward, martix
 
-function dataInit() {
-    eleBoard = document.querySelector('.board')
-    canvas = document.querySelector("canvas")
+function stateInit() {
 
-    eleRound = document.getElementById('round')
-    eleScore = document.getElementById('score')
-    eleBalls = document.getElementById('balls')
+    blockSize = WIDTH/m
+    RADIUS = blockSize/6 //球半径
+    vel = 1.5*RADIUS //运动方向上的速度
+    startX = Math.floor(WIDTH/2)    //发射点
+    startY = HEIGHT - RADIUS
+    deadline = n*blockSize
+    startColor = "#FFC600"    //发射球的颜色
+
+    //运行状态
+    shooting = false
+    skipping = false
+    canskip = false
+    if (canskiptimer) clearTimeout(canskiptimer)
+    canskiptimer = null
+    framcount = 0   //渲染帧计数 
+
+    ballNums = 1   //发射球的数量
+    balls = new Array() //已发射的球
+    readyBalls = new Array()    //待发射的球
+
+    //回合相关数据
+    martix = Array.from(new Array(n+5), ()=>new Array(m).fill(0))
+    round = 0 //回合数记录
+    score = 0 //得分
+    nReward = 1
+
+}
+
+function init() {
+    // eleBoard = document.querySelector('.board')
+    // canvas = document.querySelector("canvas")
+
+    canvas = document.createElement('canvas')
+    eleBoard = document.createElement('div')
+    eleBoard.className = "board"
+    eleBoard.innerHTML = `
+        <div class="iconitem">
+            <a href="https://github.com/linyibin97/bounce-ball"><span class="iconfont">&#xe645;</span></a>
+        </div>
+        <div class="items">
+            <span class="iconfont">&#xe65e;</span>
+            <span>Round</span>
+            <span id="round"></span>
+        </div>
+        <div class="items">
+            <span class="iconfont">&#xe64b;</span>
+            <span>Score</span>                
+            <span id="score"></span>
+        </div>
+        <div class="items">
+            <span class="iconfont">&#xe711;</span>
+            <span>×</span>   
+            <span id="balls"></span>
+        </div>
+        <div class="iconitem" onclick="replay()">
+            <span class="iconfont">&#xe6a4;</span>               
+        </div>`
+    
     //自适应窗口
     let windowWidth = document.documentElement.clientWidth || document.body.clientWidth
     let windowHeight = document.documentElement.clientHeight || document.body.clientHeight
@@ -51,30 +104,14 @@ function dataInit() {
     ctx.textBaseline = "middle"
     ctx.textAlign = "center"
 
-    blockSize = WIDTH/m
-    RADIUS = blockSize/6 //球半径
-    vel = 1.5*RADIUS //运动方向上的速度
-    startX = Math.floor(WIDTH/2)    //发射点
-    startY = HEIGHT - RADIUS
-    deadline = n*blockSize
-    startColor = "#FFC600"    //发射球的颜色
+    let wrapper = document.querySelector('.wrapper')
+    wrapper.appendChild(eleBoard)
+    wrapper.appendChild(canvas)
+    eleRound = document.getElementById('round')
+    eleScore = document.getElementById('score')
+    eleBalls = document.getElementById('balls')
 
-    //运行状态
-    shooting = false
-    skipping = false
-    canskip = false
-    canskiptimer = null
-    framcount = 0   //渲染帧计数 
-
-    ballNums = 1   //发射球的数量
-    balls = new Array() //已发射的球
-    readyBalls = new Array()    //待发射的球
-
-    //回合相关数据
-    martix = Array.from(new Array(n+5), ()=>new Array(m).fill(0))
-    round = 0 //回合数记录
-    score = 0 //得分
-    nReward = 1
+    stateInit()
 }
 
 const blockColor = ['#33691E','#1B5E20','#004D40','#006064','#0D47A1','#1A237E','#311B92','#4A148C','#880E4F','#B71C1C']
@@ -426,18 +463,13 @@ function replay() {
     if (window.localStorage) {
         window.localStorage.removeItem('gamedata')
     }
-    martix = Array.from(new Array(n+5), ()=>new Array(m).fill(0))
-    round = 0 //回合数记录
-    score = 0 //得分
+    stateInit()
     nextRound() 
 }
 
 window.onload = ()=>{
-    dataInit()
-    
-
+    init()
     canvas.onclick = handleClick
-
     //test
     // for (let i=0; i<n*0.5; i++) 
     // for (let j=0; j<m; j++) {
