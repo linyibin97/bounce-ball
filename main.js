@@ -264,121 +264,82 @@ class Ball {
                 martix[i][j] = Math.max(0, martix[i][j] - 1)
             }
         }
-
-        // #region
-        // const i = YtoI(this.y)
-        // const j = XtoJ(this.x)
-        // const x = this.x
-        // const y = this.y
-        // const r = this.r
-        // const a0 = this.a0
-        // const vel = this.vel 
-        // let nextX = x + Math.cos(a0/180*Math.PI)*vel
-        // let nextY = y + Math.sin(a0/180*Math.PI)*vel
-        // if (nextX - r < 0) {
-        //     let x0 = r
-        //     let y0 = y + (x - r) * Math.tan(a0/180*Math.PI)
-        //     let d = vel - Math.sqrt(Math.pow(x0-x,2)+Math.pow(y0-y,2))
-        //     let [x2, y2, a1] = bounce(x0, y0, 0, y0, d, a0)
-        //     nextX = x2
-        //     nextY = y2
-        //     this.a0 = a1
-        // } 
-        // if (nextX + r > WIDTH) {
-        //     let x0 = WIDTH - r
-        //     let y0 = y + (WIDTH - r - x) * Math.tan(a0/180*Math.PI)
-        //     let d = vel - Math.sqrt(Math.pow(x0-x,2)+Math.pow(y0-y,2))
-        //     let [x2, y2, a1] = bounce(x0, y0, WIDTH, y0, d, a0)
-        //     nextX = x2
-        //     nextY = y2
-        //     this.a0 = a1
-        // }
-        // if (nextY - r < 0) {
-        //     let x0 = x + (y - r) / Math.tan(a0/180*Math.PI)
-        //     let y0 = r
-        //     let d = vel - Math.sqrt(Math.pow(x0-x,2)+Math.pow(y0-y,2))
-        //     let [x2, y2, a1] = bounce(x0, y0, x0, 0, d, a0)
-        //     nextX = x2
-        //     nextY = y2
-        //     this.a0 = a1
-        // }
-        // this.x = nextX
-        // this.y = nextY
-        // #endregion
-
-        const isBlock = (x, y) => {
+        const isBlockIJ = (i, j) => 0 <= i && 0 <= j && j < m && martix[i][j] > 0 
+        const isBlockXY = (x, y) => {
             //检测x, y是否不能通过
             if (x<0 || x>WIDTH) return true
             if (y<0) return true //底部可通过（运动结束）
             return martix[YtoI(y)][XtoJ(x)] > 0
         }
-        const distance = (x1, y1, x2, y2) => Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2))
-        
-        const updateX = () => {
-            if (nX<this.x && isBlock(nX - this.r, nY)) {
-                // console.log('left')
-                bounced = true
-                eliminate(YtoI(nY),XtoJ(nX-this.r))
-                const x0 = (XtoJ(nX-this.r)+1)*blockSize + this.r
-                const y0 = nY + (x0 - nX) * Math.tan(this.a0/180*Math.PI);
-                [nX, nY, this.a0] = bounce(x0, y0, x0-this.r, y0, distance(x0, y0, nX, nY), this.a0)
-            } else if (nX>this.x && isBlock(nX + this.r, nY)) {
-                // console.log('right')
-                bounced = true
-                eliminate(YtoI(nY),XtoJ(nX+this.r))
-                const x0 = (XtoJ(nX+this.r))*blockSize - this.r
-                const y0 = nY + (x0 - nX) * Math.tan(this.a0/180*Math.PI);
-                [nX, nY, this.a0] = bounce(x0, y0, x0+this.r, y0, distance(x0, y0, nX, nY), this.a0)
-            }
-        }
-        const updateY = ()=> {
-            if (nY>this.y && isBlock(nX, nY + this.r)) {
-                // console.log('bottom')
-                bounced = true
-                eliminate(YtoI(nY+this.r),XtoJ(nX))
-                const y0 = (YtoI(nY+this.r))*blockSize - this.r
-                const x0 = nX + (y0 - nY) / Math.tan(this.a0/180*Math.PI);
-                [nX, nY, this.a0] = bounce(x0, y0, x0, y0+this.r, distance(x0, y0, nX, nY), this.a0)
-            } else if (nY<this.y && isBlock(nX, nY - this.r)) {
-                // console.log('top')
-                bounced = true
-                eliminate(YtoI(nY-this.r),XtoJ(nX))
-                const y0 = (YtoI(nY-this.r)+1)*blockSize + this.r
-                const x0 = nX + (y0 - nY) / Math.tan(this.a0/180*Math.PI);
-                [nX, nY, this.a0] = bounce(x0, y0, x0, y0-this.r, distance(x0, y0, nX, nY), this.a0)
-            }
-        }
-        
+        const distance = (x1, y1, x2, y2) => Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2))        
         let nX = this.x + Math.cos(this.a0/180*Math.PI)*this.vel
         let nY = this.y + Math.sin(this.a0/180*Math.PI)*this.vel
+        let i = YtoI(this.y)
+        let j = XtoJ(this.x)
 
-        // console.log(`
-        // (${this.x.toFixed(1)},${this.y.toFixed(1)})
-        // (${nX.toFixed(1)},${nY.toFixed(1)})
-        // ${this.a0.toFixed(1)}
-        // `)
-        let bounced = false
-        // 对边进行检测, 考虑两个方向的先后顺序
-        if (Math.abs(nY-this.y)>Math.abs(nX-this.x)) {
-            updateY()
-            updateX()
-        } else {
-            updateX()
-            updateY()
-        }
 
-        //对四个角检测
-        if (!bounced) {
 
-        }
+        // const updateX = () => {
+        //     if (nX<this.x && isBlock(nX - this.r, nY)) {
+        //         // console.log('left')
+        //         bounced = true
+        //         eliminate(YtoI(nY),XtoJ(nX-this.r))
+        //         const x0 = (XtoJ(nX-this.r)+1)*blockSize + this.r
+        //         const y0 = nY + (x0 - nX) * Math.tan(this.a0/180*Math.PI);
+        //         [nX, nY, this.a0] = bounce(x0, y0, x0-this.r, y0, distance(x0, y0, nX, nY), this.a0)
+        //     } else if (nX>this.x && isBlock(nX + this.r, nY)) {
+        //         // console.log('right')
+        //         bounced = true
+        //         eliminate(YtoI(nY),XtoJ(nX+this.r))
+        //         const x0 = (XtoJ(nX+this.r))*blockSize - this.r
+        //         const y0 = nY + (x0 - nX) * Math.tan(this.a0/180*Math.PI);
+        //         [nX, nY, this.a0] = bounce(x0, y0, x0+this.r, y0, distance(x0, y0, nX, nY), this.a0)
+        //     }
+        // }
+        // const updateY = ()=> {
+        //     if (nY>this.y && isBlock(nX, nY + this.r)) {
+        //         // console.log('bottom')
+        //         bounced = true
+        //         eliminate(YtoI(nY+this.r),XtoJ(nX))
+        //         const y0 = (YtoI(nY+this.r))*blockSize - this.r
+        //         const x0 = nX + (y0 - nY) / Math.tan(this.a0/180*Math.PI);
+        //         [nX, nY, this.a0] = bounce(x0, y0, x0, y0+this.r, distance(x0, y0, nX, nY), this.a0)
+        //     } else if (nY<this.y && isBlock(nX, nY - this.r)) {
+        //         // console.log('top')
+        //         bounced = true
+        //         eliminate(YtoI(nY-this.r),XtoJ(nX))
+        //         const y0 = (YtoI(nY-this.r)+1)*blockSize + this.r
+        //         const x0 = nX + (y0 - nY) / Math.tan(this.a0/180*Math.PI);
+        //         [nX, nY, this.a0] = bounce(x0, y0, x0, y0-this.r, distance(x0, y0, nX, nY), this.a0)
+        //     }
+        // }
+        // // console.log(`
+        // // (${this.x.toFixed(1)},${this.y.toFixed(1)})
+        // // (${nX.toFixed(1)},${nY.toFixed(1)})
+        // // ${this.a0.toFixed(1)}
+        // // `)
+        // let bounced = false
+        // // 对边进行检测, 考虑两个方向的先后顺序
+        // if (Math.abs(nY-this.y)>Math.abs(nX-this.x)) {
+        //     updateY()
+        //     updateX()
+        // } else {
+        //     updateX()
+        //     updateY()
+        // }
 
-        this.x = nX
-        this.y = nY
+        // //对四个角检测
+        // if (!bounced) {
+
+        // }
+
+        // this.x = nX
+        // this.y = nY
 
 
         //奖励球
-        let i = YtoI(this.y)
-        let j = XtoJ(this.x)
+        YtoI(this.y)
+        XtoJ(this.x)
         if (0<=i && i<n && 0<=j && j<m && martix[i][j]<0) {
             ballNums += Math.abs(martix[i][j])
             martix[i][j] = 0
