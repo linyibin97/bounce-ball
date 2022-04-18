@@ -163,7 +163,7 @@ function nextRound() {
         for (let j=0; j<m; j++) {
             if (layer[j]<0) continue
             if (Math.random()<=pBlock) { //生成方块
-                layer[j] = nBlock + Math.ceil(random(-nBlock*0.1, nBlock*0.1))
+                layer[j] = nBlock + random(Math.ceil(-nBlock*0.1), Math.floor(nBlock*0.1))
             }
         }
         martix.unshift(layer)
@@ -177,7 +177,7 @@ function nextRound() {
         clearTimeout(canskiptimer)
         canskiptimer = null
     }
-    pBlock = 0.2+0.5*(1-1/Math.pow(Math.E,(round/50)))
+    pBlock = 0.3+0.4*(1-1/Math.pow(Math.E,(round/50)))
     nBlock++
     nReward = 1
     round++
