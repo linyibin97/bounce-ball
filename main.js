@@ -264,6 +264,29 @@ class Ball {
                 martix[i][j] = Math.max(0, martix[i][j] - 1)
             }
         }
+        const distanceOfPointToSegLine = (px,py,x1,y1,x2,y2) => {
+            //点P(px,py) A(x1,y1)B(x2,y2)表示线段
+            //向量法求点到线段最短距离 返回线段上与P距离最小的点和长度
+            const b = getAngel(x2,y2,x1,y1) //AB向量角
+            const a = (getAngel(px,py,x1,y1) - b + 360) % 360 //向量夹角
+            const lPA = distance(px,py,x1,y1)
+            const lPB = distance(px,py,x2,y2)
+            const lAB = distance(x1,y1,x2,y2)
+            const l = lPA*Math.cos(a/180*Math.PI)
+            if (l>0 && l<lAB) {
+                //P在AB方向上的投影在AB内
+                return [
+                    x1+l*Math.cos(b/180*Math.PI),
+                    y1+l*Math.sin(b/180*Math.PI),
+                    lPA*Math.sin(a/180*Math.PI),
+                    l
+                ]
+            }
+            //返回距离较小的端点
+            if (lPA>lPB) return [x2,y2,lPB,l]
+                else return [x1,y1,lPA,l]
+        }
+        const distance = (x1, y1, x2, y2) => Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2))  
         const isBlockIJ = (i, j) => 0 <= i && 0 <= j && j < m && martix[i][j] > 0 
         const isBlockXY = (x, y) => {
             //检测x, y是否不能通过
@@ -271,14 +294,67 @@ class Ball {
             if (y<0) return true //底部可通过（运动结束）
             return martix[YtoI(y)][XtoJ(x)] > 0
         }
-        const distance = (x1, y1, x2, y2) => Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2))        
-        let nX = this.x + Math.cos(this.a0/180*Math.PI)*this.vel
-        let nY = this.y + Math.sin(this.a0/180*Math.PI)*this.vel
-        let i = YtoI(this.y)
-        let j = XtoJ(this.x)
+        const next = [[-1,-1],[-1,0],[-1,1],[0,1],[1,1],[1,0],[1,-1],[0,-1]] //八个方向
+        next[-1] = [[0,-1]]
+        next[8] = [-1,-1] //循环
 
+        let d = this.vel    //前进距离
+        let bounced = new Array(8).fill(false) //记录相邻8个方块的是否反弹过
 
+        function Line(x1, y1, x2, y2) {
+            this.x1 = x1
+            this.y1 = y1
+            this.x2 = x2
+            this.y2 = y2
+        }
+        const getIntersection = (l1 ,l2) => {
+            
+        }
+        const getLinesIntersection = (si, sj, ti, tj, r, k, path) => {
+            const ret = []
+            const x1 = tj * blockSize
+            const y1 = ti * blockSize
+            const x2 = (tj + 1) * blockSize
+            const y2 = (ti + 1) * blockSize
+            if (si < ti && !isBlockIJ(ti - 1, tj)) {
+                //上边
+                let intersection = getIntersection(path, new Line(x1, y1 - r, x2, y1 - r))
+            }
+            if (si > ti && !isBlockIJ(ti + 1, tj)) {
+                 //下边
+                let intersection = getIntersection(path, new Line(x1, y2 + r, x2, y2 + r))
+            }
+            if (sj < tj && !isBlockIJ(ti, tj - 1)) {
+                 //左边
+                let intersection = getIntersection(path, new Line(x1 - r, y1, x1 - r, y2))
+            }
+            if (sj > tj && !isBlockIJ(ti, tj + 1)) {
+                //右边
+                let intersection = getIntersection(path, new Line(x2 + r, y1, x2 + r, y2)) 
+            }
+            return ret
+        }
 
+        while (d>0) {
+            let i = YtoI(this.y)
+            let j = XtoJ(this.x)
+            // 运动轨迹的终点(nx,ny)
+            let nx = this.x + Math.cos(this.a0/180*Math.PI)*d
+            let ny = this.y + Math.sin(this.a0/180*Math.PI)*d
+
+            let edgePoints = [] //与边的碰撞点
+            let cornerPoints = [] //与角的碰撞点
+
+            let path = new Line(this.x, this.y, nx, ny)
+
+            for (let k=0; k<8; k++) {
+                if (!bounced[k] && isBlockIJ(i+next[k][0], j+next[k][0])) {
+                    edgePoints.push(...getLines(i, j, i+next[k][0], j+next[k][0], this.r, k, path))       
+                }
+            }
+
+        }
+        
         // const updateX = () => {
         //     if (nX<this.x && isBlock(nX - this.r, nY)) {
         //         // console.log('left')
@@ -390,8 +466,8 @@ class Ball {
 
 
         //奖励球
-        YtoI(this.y)
-        XtoJ(this.x)
+        let i = YtoI(this.y)
+        let j = XtoJ(this.x)
         if (0<=i && i<n && 0<=j && j<m && martix[i][j]<0) {
             ballNums += Math.abs(martix[i][j])
             martix[i][j] = 0
