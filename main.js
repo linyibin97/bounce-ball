@@ -330,7 +330,59 @@ class Ball {
 
         // //对四个角检测
         // if (!bounced) {
-
+        //     let i = YtoI(this.y)
+        //     let j = XtoJ(this.x)
+        //     if (0<i && i<n-1 && 0<j && j<m-1) {  
+        //         const lx = j * blockSize
+        //         const ly = i * blockSize
+        //         const hx = (j+1) * blockSize
+        //         const hy = (i+1) * blockSize
+        //         if ((martix[i][j-1]>0)+(martix[i-1][j-1]>0)+(martix[i-1][j]>0)==1) {
+        //             //左上三格仅有一格为方块 左上坐标(lx,ly)作为碰撞点 近似地认为在距离最小点处发生碰撞
+        //             const [x0, y0, dis, d] = distanceOfPointToSegLine(lx,ly,this.x,this.y,nX,nY)
+        //             if (dis < this.r) {
+        //                 console.log('↖')
+        //                 eliminate(i,j-1)
+        //                 eliminate(i-1,j-1)
+        //                 eliminate(i-1,j);
+        //                 [nX, nY, this.a0] = bounce(x0, y0, lx, ly, this.vel-d, this.a0)
+        //             }
+        //         }
+        //         if ((martix[i-1][j]>0)+(martix[i-1][j+1]>0)+(martix[i][j+1]>0)==1) {
+        //             //右上
+        //             const [x0, y0, dis, d] = distanceOfPointToSegLine(hx,ly,this.x,this.y,nX,nY)
+        //             if (dis < this.r) {
+        //                 console.log(this.r,dis,'↗')
+        //                 eliminate(i-1,j)
+        //                 eliminate(i-1,j+1)
+        //                 eliminate(i,j+1);
+        //                 [nX, nY, this.a0] = bounce(x0, y0, hx, ly, this.vel-d, this.a0)
+        //             }
+        //         }
+        //         if ((martix[i][j+1]>0)+(martix[i+1][j+1]>0)+(martix[i+1][j]>0)==1) {
+        //             //右下
+        //             const [x0, y0, dis, d] = distanceOfPointToSegLine(hx,hy,this.x,this.y,nX,nY)
+        //             if (dis < this.r) {
+        //                 console.log('↘')
+        //                 eliminate(i,j+1)
+        //                 eliminate(i+1,j+1)
+        //                 eliminate(i+1,j);
+        //                 [nX, nY, this.a0] = bounce(x0, y0, hx, hy, this.vel-d, this.a0)
+        //             }
+        //         }
+        //         if ((martix[i+1][j]>0)+(martix[i+1][j-1]>0)+(martix[i][j-1]>0)==1) {
+        //             //左下
+        //             const [x0, y0, dis, d] = distanceOfPointToSegLine(lx,hy,this.x,this.y,nX,nY)
+        //             if (dis < this.r) {
+        //                 console.log('↙')
+        //                 eliminate(i+1,j)
+        //                 eliminate(i+1,j-1)
+        //                 eliminate(i,j-1);
+        //                 [nX, nY, this.a0] = bounce(x0, y0, lx, hy, this.vel-d, this.a0)
+        //             }
+        //         }
+        //     }
+        // }
         // }
 
         // this.x = nX
