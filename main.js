@@ -308,7 +308,7 @@ class Ball {
             this.y2 = y2
         }
         const getIntersection = (l1 ,l2) => {
-            
+
         }
         const getLinesIntersection = (si, sj, ti, tj, r, k, path) => {
             const ret = []
@@ -319,6 +319,16 @@ class Ball {
             if (si < ti && !isBlockIJ(ti - 1, tj)) {
                 //上边
                 let intersection = getIntersection(path, new Line(x1, y1 - r, x2, y1 - r))
+                if (intersection) {
+                    //有交点 
+                    ret.push({
+                        x0: intersection.x, //碰撞圆心坐标
+                        y0: intersection.y, 
+                        x1: intersection.x, //碰撞点坐标
+                        y1: intersection.y + r,
+                        k: k  //发生碰撞方块对应的编号
+                    })
+                }
             }
             if (si > ti && !isBlockIJ(ti + 1, tj)) {
                  //下边
@@ -347,11 +357,19 @@ class Ball {
 
             let path = new Line(this.x, this.y, nx, ny)
 
+            let collisionPoint = null
+
             for (let k=0; k<8; k++) {
                 if (!bounced[k] && isBlockIJ(i+next[k][0], j+next[k][0])) {
-                    edgePoints.push(...getLines(i, j, i+next[k][0], j+next[k][0], this.r, k, path))       
+                    let points = getLinesIntersection(i, j, i+next[k][0], j+next[k][0], this.r, k, path)
+                    for (let point of points) {
+                        //找到距离起点最近的交点
+                        if (!collisionPoint || distance(this.x, this.y, point.x0, point.y0) < distance(this.x, this.y, collisionPoint.x, collisionPoint.y)) 
+                            collisionPoint = point
+                    }   
                 }
             }
+            
 
         }
         
