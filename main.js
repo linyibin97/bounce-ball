@@ -210,13 +210,12 @@ function nextRound() {
         if (martix[n-1].some((num)=>num>0)) return false //还有未消除的方块
         martix.pop()
         const layer = new Array(m).fill(0)
-        layer[Math.floor(Math.random()*10)] = -nReward //生成奖励球
         for (let j=0; j<m; j++) {
-            if (layer[j]<0) continue
             if (Math.random()<=pBlock) { //生成方块
                 layer[j] = round + random(Math.ceil(-round*0.1), Math.floor(round*0.1))
             }
         }
+        layer[Math.floor(Math.random()*10)] = -nReward //生成奖励球
         martix.unshift(layer)
         return true
     }
@@ -231,7 +230,7 @@ function nextRound() {
 
     round++
     
-    if (!generateLayer(0.3+0.4*(1-1/Math.pow(Math.E,(round/50))))) {
+    if (!generateLayer(0.3+0.3*(1-1/Math.pow(Math.E,(round/50))))) {
         gameOver()
         return
     }
