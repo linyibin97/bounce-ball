@@ -2,7 +2,7 @@ const n = 15 //矩阵高
 const m = 10 //矩阵宽
 const interval = 3 //小球发射间隔帧数
 const devMode = true //调试
-const devStep = 20
+const devStep = 500
 
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
 let shooting, skipping, canskip, canskiptimer, framcount, startColor
@@ -463,20 +463,56 @@ class Ball {
             return ret
         }
 
+        const getArcIntersection = (px, py, r, al, ah, line) => {
+            //圆心P(px,py) 半径r 圆弧角度为[al,ah] l:A(x1,y1)→B(x2,y2)表示线段
+            //求圆弧与线段交点
+            const b = getAngel(line.x2, line.y2, line.x1, line.y1) //AB向量角
+            const a = (getAngel(px, py, line.x1, line.y1) - b + 360) % 360 //向量夹角
+            const lPA = distance(px, py, line.x1, line.y1)
+            const lAB = distance(line.x1, line.y1, line.x2, line.y2)
+            const l = lPA*Math.cos(a/180*Math.PI)
+            const d = lPA*Math.sin(a/180*Math.PI)
+            if (Math.abs(d) > r) return []
+            const k = Math.sqrt(Math.pow(r,2)-Math.pow(d,2))
+            let ret = []
+            if (0 <= l+k && l+k <= lAB) {  //在线段上
+                const rx = line.x1+(l+k)*Math.cos(b/180*Math.PI)
+                const ry = line.y1+(l+k)*Math.sin(b/180*Math.PI)
+                const ra = getAngel(rx, ry, px, py)
+                if ((al <= ra && ra <= ah) || (ah <= al && (ra <= ah || ra >= al))) ret.push([rx, ry]) //在圆弧上
+            }
+            if (Math.abs(d)!==r && 0 <= l-k && l-k <= lAB) {  //在线段上
+                const rx = line.x1+(l-k)*Math.cos(b/180*Math.PI)
+                const ry = line.y1+(l-k)*Math.sin(b/180*Math.PI)
+                const ra = getAngel(rx, ry, px, py)
+                if ((al <= ra && ra <= ah) || (ah <= al && (ra <= ah || ra >= al))) ret.push([rx, ry]) //在圆弧上
+            }
+            return ret
+        }
+
         const getArcsCollisionPoints = (si, sj, ti, tj ,r ,k ,path) => {
             if (isBlockIJ(si+next[k-1][0], sj+next[k-1][1]) && isBlockIJ(si+next[k+1][0], sj+next[k+1][1])) return []
             const ret = []
             const cx = [tj * blockSize, (tj + 1) * blockSize]
             const cy = [ti * blockSize, (ti + 1) * blockSize]
-            for (let x of cx) {
-                for (let y of cy) {
-                    let mind = minDistanceOfPointToSegLine(x,y,path.x1,path.y1,path.x2,path.y2)
-                    if (distance(mind[0],mind[1],x,y)<r) {
-                        console.log('corner')
+            const angleRange = [[90, 180], [0, 90], [270, 360], [180, 270]]
+            for (let di = 0; di < 2; di++) {
+                for (let dj = 0; dj < 2; dj++) {
+                    const x1 = cx[dj]
+                    const y1 = cy[di] 
+                    for (let point of getArcIntersection(x1, y1, r, angleRange[di*2+dj][0], angleRange[di*2+dj][1], path)) {
+                        console.log('arc:',point[0],point[1])
+                        ret.push({
+                            x0: point[0], //碰撞圆心坐标
+                            y0: point[1], 
+                            x1: x1, //碰撞点坐标
+                            y1: y1,
+                            k: k  //发生碰撞方块对应的编号
+                        })
                     }
                 }
             }
-            return []
+            return ret
         }
 
         const display = (i, j) => {
