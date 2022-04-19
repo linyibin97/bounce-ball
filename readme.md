@@ -12,3 +12,7 @@
 - v1.0 将小球的速度分解为x轴与y轴两个方向，比较简单的碰撞检测，只考虑x轴y轴方向上的碰撞反弹。
 - v2.0 小球速度记录为速度大小与角度
 - v3.0 更真实且精准的运动模型，考虑小球撞角的情况。
+
+## 调试模式
+将全局变量devMode设置为True可以直观地观察几何计算
+![collision](https://raw.githubusercontent.com/linyibin97/bounce-ball/master/collision.png)

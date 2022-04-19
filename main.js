@@ -2,7 +2,7 @@ const n = 15 //矩阵高
 const m = 10 //矩阵宽
 const interval = 3 //小球发射间隔帧数
 const devMode = true //调试
-const devStep = 50
+const devStep = 500
 const debugShowAliveFrame = 10
 let debugDispaly = []
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
@@ -118,7 +118,7 @@ function init() {
 }
 
 const next = [[-1,-1],[-1,0],[-1,1],[0,1],[1,1],[1,0],[1,-1],[0,-1]] //八个方向
-next[-1] = [[0,-1]]
+next[-1] = [0,-1]
 next[8] = [-1,-1] //循环
 const blockColor = ['#33691E','#1B5E20','#004D40','#006064','#0D47A1','#1A237E','#311B92','#4A148C','#880E4F','#B71C1C']
 const getBlockColor = (num)=>{
@@ -472,6 +472,8 @@ const getArcIntersection = (px, py, r, al, ah, line) => {
 }
 const getArcsCollisionPoints = (si, sj, ti, tj ,r ,k ,path) => {
     if (isBlockIJ(si+next[k-1][0], sj+next[k-1][1]) && isBlockIJ(si+next[k+1][0], sj+next[k+1][1])) return []
+    console.log(isBlockIJ(si+next[k-1][0], sj+next[k-1][1]), isBlockIJ(si+next[k+1][0], sj+next[k+1][1]))
+    console.log(k, '|', si,sj,' | ',si+next[k-1][0], sj+next[k-1][1], '|', si+next[k+1][0], sj+next[k+1][1])
     const ret = []
     const cx = [tj * blockSize, (tj + 1) * blockSize]
     const cy = [ti * blockSize, (ti + 1) * blockSize]
