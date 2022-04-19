@@ -1,7 +1,7 @@
 const n = 15 //矩阵高
 const m = 10 //矩阵宽
 const interval = 3 //小球发射间隔帧数
-const devMode = true //调试
+const devMode = false //调试
 const devStep = 500
 const debugShowAliveFrame = 10
 let debugDispaly = []
