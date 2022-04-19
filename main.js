@@ -2,7 +2,8 @@ const n = 15 //矩阵高
 const m = 10 //矩阵宽
 const interval = 3 //小球发射间隔帧数
 const devMode = true //调试
-const devStep = 500
+const devStep = 20
+const collisionDispaly = []
 
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
 let shooting, skipping, canskip, canskiptimer, framcount, startColor
@@ -191,8 +192,18 @@ function updateView() {
         new Ball(startX, startY-RADIUS, RADIUS, 0, 0, startColor).draw()
     } else {
         balls.forEach(ball=>ball.draw())
+
+        if (devMode)
+            collisionDispaly.filter(b=>{
+                b.n--
+                ctx.beginPath()
+                ctx.fillStyle = '#FF0000'
+                ctx.arc(b.x, b.y, 3, 0, 2*Math.PI)
+                ctx.fill()
+                ctx.closePath()
+                return b.n>0
+            })
     }
-    
 }
 
 function nextRound() {
@@ -558,8 +569,12 @@ class Ball {
 
             if (collisionPoint) {
                 //发生碰撞
-                display(i, j)
-                console.log(collisionPoint)
+                if (devMode) {
+                    display(i, j)
+                    console.log(collisionPoint)
+                    collisionDispaly.push({x:collisionPoint.x1,y:collisionPoint.y1,n:10})
+                }
+                
                 bounced[(i+next[collisionPoint.k][0])*m+(j+next[collisionPoint.k][1])] = true
                 d -= distance(this.x, this.y, collisionPoint.x0, collisionPoint.y0)
                 this.x = collisionPoint.x0
