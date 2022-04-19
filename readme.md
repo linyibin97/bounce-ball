@@ -15,4 +15,5 @@
 
 ## 调试模式
 将全局变量devMode设置为True可以直观地观察几何计算
+
 ![collision](https://raw.githubusercontent.com/linyibin97/bounce-ball/master/collision.png)
