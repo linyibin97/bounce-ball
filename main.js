@@ -280,13 +280,13 @@ class Ball {
                 return [
                     x1+l*Math.cos(b/180*Math.PI),
                     y1+l*Math.sin(b/180*Math.PI),
-                    lPA*Math.sin(a/180*Math.PI),
-                    l
+                    // lPA*Math.sin(a/180*Math.PI),
+                    // l
                 ]
             }
             //返回距离较小的端点
-            if (lPA>lPB) return [x2,y2,lPB,l]
-                else return [x1,y1,lPA,l]
+            if (lPA>lPB) return [x2,y2]//[x2,y2,lPB,l]
+                else return [x1,y1]//[x1,y1,lPA,l]
         }
         const getIntersection = (l1 ,l2) => {
             const Point = function (x,y) {
@@ -421,12 +421,6 @@ class Ball {
             if (si > ti && !isBlockIJ(ti + 1, tj)) {
                  //墙在上
                 let intersection = getIntersection(new Line(x1, y2 + r, x2, y2 + r), path)
-                console.log('i,j ', ti, tj)
-                console.log('x1,y1 ', x1, y1)
-                console.log('x2,y2 ', x2, y2)
-                console.log(new Line(x1, y2 + r, x2, y2 + r))
-                console.log(path)
-                console.log(intersection)
                 if (intersection) {
                     //有交点 
                     ret.push({
@@ -469,6 +463,10 @@ class Ball {
             return ret
         }
 
+        const getArcsCollisionPoints = (si, sj, ti, tj ,r ,k ,path) => {
+            
+        }
+
         const display = (i, j) => {
             let s = '------'
             s += '\n'
@@ -507,6 +505,9 @@ class Ball {
                 }
             }
 
+
+
+
             if (collisionPoint) {
                 //发生碰撞
                 console.log(collisionPoint)
@@ -521,62 +522,13 @@ class Ball {
                     collisionPoint.y1,
                     this.a0
                 )
+                eliminate(i+next[collisionPoint.k][0],j+next[collisionPoint.k][1])
             } else {
                 this.x = nx
                 this.y = ny
                 d = 0
             }
         }
-
-
-        // const updateX = () => {
-        //     if (nX<this.x && isBlock(nX - this.r, nY)) {
-        //         // console.log('left')
-        //         bounced = true
-        //         eliminate(YtoI(nY),XtoJ(nX-this.r))
-        //         const x0 = (XtoJ(nX-this.r)+1)*blockSize + this.r
-        //         const y0 = nY + (x0 - nX) * Math.tan(this.a0/180*Math.PI);
-        //         [nX, nY, this.a0] = bounce(x0, y0, x0-this.r, y0, distance(x0, y0, nX, nY), this.a0)
-        //     } else if (nX>this.x && isBlock(nX + this.r, nY)) {
-        //         // console.log('right')
-        //         bounced = true
-        //         eliminate(YtoI(nY),XtoJ(nX+this.r))
-        //         const x0 = (XtoJ(nX+this.r))*blockSize - this.r
-        //         const y0 = nY + (x0 - nX) * Math.tan(this.a0/180*Math.PI);
-        //         [nX, nY, this.a0] = bounce(x0, y0, x0+this.r, y0, distance(x0, y0, nX, nY), this.a0)
-        //     }
-        // }
-        // const updateY = ()=> {
-        //     if (nY>this.y && isBlock(nX, nY + this.r)) {
-        //         // console.log('bottom')
-        //         bounced = true
-        //         eliminate(YtoI(nY+this.r),XtoJ(nX))
-        //         const y0 = (YtoI(nY+this.r))*blockSize - this.r
-        //         const x0 = nX + (y0 - nY) / Math.tan(this.a0/180*Math.PI);
-        //         [nX, nY, this.a0] = bounce(x0, y0, x0, y0+this.r, distance(x0, y0, nX, nY), this.a0)
-        //     } else if (nY<this.y && isBlock(nX, nY - this.r)) {
-        //         // console.log('top')
-        //         bounced = true
-        //         eliminate(YtoI(nY-this.r),XtoJ(nX))
-        //         const y0 = (YtoI(nY-this.r)+1)*blockSize + this.r
-        //         const x0 = nX + (y0 - nY) / Math.tan(this.a0/180*Math.PI);
-        //         [nX, nY, this.a0] = bounce(x0, y0, x0, y0-this.r, distance(x0, y0, nX, nY), this.a0)
-        //     }
-        // }
-        // // console.log(`
-        // // (${this.x.toFixed(1)},${this.y.toFixed(1)})
-        // // (${nX.toFixed(1)},${nY.toFixed(1)})
-        // // ${this.a0.toFixed(1)}
-        // // `)
-        // let bounced = false
-        // // 对边进行检测, 考虑两个方向的先后顺序
-        // if (Math.abs(nY-this.y)>Math.abs(nX-this.x)) {
-        //     updateY()
-        //     updateX()
-        // } else {
-        //     updateX()
-        //     updateY()
-        // }
 
         // //对四个角检测
         // if (!bounced) {
