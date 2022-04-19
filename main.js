@@ -2,9 +2,8 @@ const n = 15 //矩阵高
 const m = 10 //矩阵宽
 const interval = 3 //小球发射间隔帧数
 const devMode = false //调试
-const devStep = 100
-const debugDispaly = []
-
+const devStep = 10
+let debugDispaly = []
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
 let shooting, skipping, canskip, canskiptimer, framcount, startColor
 let canvas, ctx, eleBoard, eleRound, eleScore, eleBalls
@@ -194,14 +193,14 @@ function updateView() {
         balls.forEach(ball=>ball.draw())
 
         if (devMode)
-            debugDispaly.filter(item=>{
-                item.n--
+            debugDispaly = debugDispaly.filter(item=>{
+                item.alive = item.alive - 1
                 ctx.beginPath()
                 ctx.fillStyle = item.color
                 ctx.arc(item.x, item.y, 3, 0, 2*Math.PI)
                 ctx.fill()
                 ctx.closePath()
-                return item.n > 0
+                return item.alive > 0
             })
     }
 }
@@ -276,28 +275,6 @@ class Ball {
                 score += 10
                 martix[i][j] = Math.max(0, martix[i][j] - 1)
             }
-        }
-        const minDistanceOfPointToSegLine = (px,py,x1,y1,x2,y2) => {
-            //点P(px,py) A(x1,y1)B(x2,y2)表示线段
-            //向量法求点到线段最短距离 返回线段上与P距离最小的点和长度
-            const b = getAngel(x2,y2,x1,y1) //AB向量角
-            const a = (getAngel(px,py,x1,y1) - b + 360) % 360 //向量夹角
-            const lPA = distance(px,py,x1,y1)
-            const lPB = distance(px,py,x2,y2)
-            const lAB = distance(x1,y1,x2,y2)
-            const l = lPA*Math.cos(a/180*Math.PI)
-            if (l>0 && l<lAB) {
-                //P在AB方向上的投影在AB内
-                return [
-                    x1+l*Math.cos(b/180*Math.PI),
-                    y1+l*Math.sin(b/180*Math.PI),
-                    // lPA*Math.sin(a/180*Math.PI),
-                    // l
-                ]
-            }
-            //返回距离较小的端点
-            if (lPA>lPB) return [x2,y2]//[x2,y2,lPB,l]
-                else return [x1,y1]//[x1,y1,lPA,l]
         }
         const getIntersection = (l1 ,l2) => {
             const Point = function (x,y) {
@@ -515,7 +492,6 @@ class Ball {
                     const y1 = cy[di] 
                     debugDispaly.push({x:x1,y:y1,n:10,color:'green'})
                     for (let point of getArcIntersection(x1, y1, r, angleRange[di*2+dj][0], angleRange[di*2+dj][1], path)) {
-                        console.log('arc:',point[0],point[1])
                         ret.push({
                             x0: point[0], //碰撞圆心坐标
                             y0: point[1], 
@@ -575,7 +551,12 @@ class Ball {
                 if (devMode) {
                     display(i, j)
                     console.log(collisionPoint)
-                    // debugDispaly.push({x:collisionPoint.x1,y:collisionPoint.y1,n:10,color:'red'})
+                    debugDispaly.push({
+                        x:collisionPoint.x1,
+                        y:collisionPoint.y1,
+                        alive:10,
+                        color:'red'
+                    })
                 }
                 
                 bounced[(i+next[collisionPoint.k][0])*m+(j+next[collisionPoint.k][1])] = true
@@ -595,6 +576,12 @@ class Ball {
                 this.y = ny
                 d = 0
             }
+
+            //限制运动角度不能在水平+-10度内 会导致消除过快或者无限循环
+            if (0 <= this.a0 && this.a0 < 10) this.a0 = 10
+            if (170 < this.a0 && this.a0 < 180) this.a0 = 170
+            if (180 <= this.a0 && this.a0 < 190) this.a0 = 190
+            if (350 <= this.a0 && this.a0 < 360) this.a0 = 350
         }
 
         // //对四个角检测
@@ -757,14 +744,14 @@ window.onload = ()=>{
     if (devMode) {
         for (let i=0; i<n*0.8; i++) 
         for (let j=0; j<m; j++) {
-            martix[i][j] = random(-20,10)
+            martix[i][j] = random(-1000,300)
             if (martix[i][j] < 0) {
                 if (Math.random()<0.1) martix[i][j] = -1
                     else martix[i][j] = 0
             }
         }
         updateView()
-        // ballNums = 10
+        ballNums = 1000
         return
     }
 
