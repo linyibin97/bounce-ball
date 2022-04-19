@@ -266,7 +266,7 @@ class Ball {
                 martix[i][j] = Math.max(0, martix[i][j] - 1)
             }
         }
-        const distanceOfPointToSegLine = (px,py,x1,y1,x2,y2) => {
+        const minDistanceOfPointToSegLine = (px,py,x1,y1,x2,y2) => {
             //点P(px,py) A(x1,y1)B(x2,y2)表示线段
             //向量法求点到线段最短距离 返回线段上与P距离最小的点和长度
             const b = getAngel(x2,y2,x1,y1) //AB向量角
@@ -378,12 +378,12 @@ class Ball {
 
         const distance = (x1, y1, x2, y2) => Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2))  
         const isBlockIJ = (i, j) => !(0 <= i && 0 <= j && j < m && martix[i][j] <= 0)
-        const isBlockXY = (x, y) => {
-            //检测x, y是否不能通过
-            if (x<0 || x>WIDTH) return true
-            if (y<0) return true //底部可通过（运动结束）
-            return martix[YtoI(y)][XtoJ(x)] > 0
-        }
+        // const isBlockXY = (x, y) => {
+        //     //检测x, y是否不能通过
+        //     if (x<0 || x>WIDTH) return true
+        //     if (y<0) return true //底部可通过（运动结束）
+        //     return martix[YtoI(y)][XtoJ(x)] > 0
+        // }
         const next = [[-1,-1],[-1,0],[-1,1],[0,1],[1,1],[1,0],[1,-1],[0,-1]] //八个方向
         next[-1] = [[0,-1]]
         next[8] = [-1,-1] //循环
@@ -464,7 +464,19 @@ class Ball {
         }
 
         const getArcsCollisionPoints = (si, sj, ti, tj ,r ,k ,path) => {
-            
+            if (isBlockIJ(si+next[k-1][0], sj+next[k-1][1]) && isBlockIJ(si+next[k+1][0], sj+next[k+1][1])) return []
+            const ret = []
+            const cx = [tj * blockSize, (tj + 1) * blockSize]
+            const cy = [ti * blockSize, (ti + 1) * blockSize]
+            for (let x of cx) {
+                for (let y of cy) {
+                    let mind = minDistanceOfPointToSegLine(x,y,path.x1,path.y1,path.x2,path.y2)
+                    if (distance(mind[0],mind[1],x,y)<r) {
+                        console.log('corner')
+                    }
+                }
+            }
+            return []
         }
 
         const display = (i, j) => {
@@ -492,24 +504,25 @@ class Ball {
 
             let collisionPoint = null
 
-            display(i, j)
             //判断与边的交点
             for (let k=0; k<8; k++) {
                 if (!bounced[(i+next[k][0])*m+(j+next[k][1])] && isBlockIJ(i+next[k][0], j+next[k][1])) {
-                    let points = getLinesCollisionPoints(i, j, i+next[k][0], j+next[k][1], this.r, k, path)
+                    let points = new Array().concat(
+                        getLinesCollisionPoints(i, j, i+next[k][0], j+next[k][1], this.r, k, path),
+                        getArcsCollisionPoints(i, j, i+next[k][0], j+next[k][1], this.r, k, path)
+                    )
                     for (let point of points) {
                         //找到距离起点最近的交点
                         if (!collisionPoint || distance(this.x, this.y, point.x0, point.y0) < distance(this.x, this.y, collisionPoint.x0, collisionPoint.y0)) 
                             collisionPoint = point
-                    }   
+                    }
                 }
             }
 
 
-
-
             if (collisionPoint) {
                 //发生碰撞
+                display(i, j)
                 console.log(collisionPoint)
                 bounced[(i+next[collisionPoint.k][0])*m+(j+next[collisionPoint.k][1])] = true
                 d -= distance(this.x, this.y, collisionPoint.x0, collisionPoint.y0)
