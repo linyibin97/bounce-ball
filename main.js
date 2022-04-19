@@ -1,6 +1,8 @@
 const n = 15 //矩阵高
 const m = 10 //矩阵宽
 const interval = 3 //小球发射间隔帧数
+const devMode = true //调试
+const devStep = 20
 
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
 let shooting, skipping, canskip, canskiptimer, framcount, startColor
@@ -250,13 +252,13 @@ class Ball {
     move() {
         const YtoI = (y) => Math.floor(y/blockSize)
         const XtoJ = (x) => Math.floor(x/blockSize)
-        const bounce = (x0, y0, x1, y1, d, a) => {
+        const bounce = (x0, y0, x1, y1, a0) => {
             // 碰撞时的圆心(x0,y0) 碰撞点 (x1,y2) 反弹运动距离d 速度角a
             let b = getAngel(x1, y1, x0, y0) //碰撞点与圆心连线 与 正x轴夹角
-            let a1 = ((180 + 2 * b - a) + 360) % 360
-            let x2 = x0 + d * Math.cos(a1/180*Math.PI) 
-            let y2 = y0 + d * Math.sin(a1/180*Math.PI)
-            return [x2, y2, a1]
+            let a1 = ((180 + 2 * b - a0) + 360) % 360
+            // let x2 = x0 + d * Math.cos(a1/180*Math.PI) 
+            // let y2 = y0 + d * Math.sin(a1/180*Math.PI)
+            return a1
         }
         const eliminate = (i, j) => {
             if (0<=j && j<m && 0<=i && i<n) {
@@ -286,6 +288,94 @@ class Ball {
             if (lPA>lPB) return [x2,y2,lPB,l]
                 else return [x1,y1,lPA,l]
         }
+        const getIntersection = (l1 ,l2) => {
+            const Point = function (x,y) {
+                this.x = x;
+                this.y = y;
+            }
+            const vectorCross= (v1,v2) => {
+                return v1[0]*v2[1]-v2[0]*v1[1];
+            }
+            //点p在线段point1——point2上，且是有交点的前提下
+            const isPointInLine = (point1,point2,p) => {
+                let minX=min(point1.x,point2.x);
+                let minY=min(point1.y,point2.y);
+                let maxX=max(point1.x,point2.x);
+                let maxY=max(point1.y,point2.y);
+                if(p.x>=minX&&p.x<=maxX&&p.y>=minY&&p.y<=maxY&&vectorCross(getLine(point1,p),getLine(p,point2))===0){
+                    return true;
+                }
+                return false;    
+            }
+            const update = (x,y,arr) => {//获取坐标最小的点
+                if(arr.length===0||x<arr[0]||(x===arr[0]&&y<arr[1])){
+                    arr=[x,y];        
+                }
+                return arr;
+            }
+            const min = (a,b) => {
+                return Math.min(a,b);
+            }
+            const max = (a,b) => {
+                return Math.max(a,b);
+            }
+            const getLine = (Q1,P1) => {
+                let Q1P1=[P1.x-Q1.x,P1.y-Q1.y];
+                return Q1P1;
+            }
+            let P1 = new Point(l1.x1,l1.y1);
+            let P2 = new Point(l1.x2,l1.y2);
+            let Q1 = new Point(l2.x1,l2.y1);
+            let Q2 = new Point(l2.x2,l2.y2);
+            let arr = [];
+            if (Math.max(P1.x, P2.x) < Math.min(Q1.x, Q2.x) ||
+                Math.max(Q1.x, Q2.x) < Math.min(P1.x, P2.x) ||
+                Math.max(P1.y, P2.y) < Math.min(Q1.y, Q2.y) ||
+                Math.max(Q1.y, Q2.y) < Math.min(P1.y, P2.y)) {
+                return null;
+            }
+            let Q1P1=getLine(Q1,P1);
+            let Q1P2=getLine(Q1,P2);
+            let Q1Q2=getLine(Q1,Q2);
+            let P1P2=getLine(P1,P2);
+            let P1Q1=getLine(P1,Q1);
+            let P1Q2=getLine(P1,Q2);
+            let P2Q2=getLine(P2,Q2);
+            let crossV=vectorCross(Q1P1,Q1Q2)*vectorCross(Q1P2,Q1Q2);
+            let crossV2=vectorCross(P1Q1,P1P2)*vectorCross(P1Q2,P1P2);
+            if(crossV>0||crossV2>0){
+                return null;
+            }
+            //let crossP1P2_Q1Q2=vectorCross(P1P2,Q1Q2);
+            if(vectorCross(Q1P1,P1Q2)===0||vectorCross(Q1P2,P2Q2)===0||vectorCross(Q1P2,P2Q2)===0){//共线
+                let isQ1inP1P2=isPointInLine(P1,P2,Q1);
+                if(isQ1inP1P2){
+                    arr=update(Q1.x,Q1.y,arr);
+                }
+                let isQ2inP1P2=isPointInLine(P1,P2,Q2);
+                if(isQ2inP1P2){
+                    arr=update(Q2.x,Q2.y,arr);
+                }
+                let isP1inQ1Q2=isPointInLine(Q1,Q2,P1);
+                if(isP1inQ1Q2){
+                    arr=update(P1.x,P1.y,arr);
+                }
+                let isP2inQ1Q2=isPointInLine(Q1,Q2,P2);
+                if(isP2inQ1Q2){
+                    arr=update(P2.x,P2.y,arr);
+                }
+            } else {
+                let s1=Math.abs(vectorCross(Q1Q2,Q1P2))*0.5;
+                let s2=Math.abs(vectorCross(Q1Q2,Q1P1))*0.5;
+                let lamda=s1/s2;
+                let x,y;
+                x=(P2.x+lamda*P1.x)/(1+lamda);
+                y=(P2.y+lamda*P1.y)/(1+lamda);
+                arr=[x,y];
+            }
+            return arr.length>0 ? arr : null
+        }
+
         const distance = (x1, y1, x2, y2) => Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2))  
         const isBlockIJ = (i, j) => !(0 <= i && 0 <= j && j < m && martix[i][j] <= 0)
         const isBlockXY = (x, y) => {
@@ -299,7 +389,7 @@ class Ball {
         next[8] = [-1,-1] //循环
 
         let d = this.vel    //前进距离
-        let bounced = new Array(8).fill(false) //记录相邻8个方块的是否反弹过
+        let bounced = {} //记录反弹过的方块
 
         function Line(x1, y1, x2, y2) {
             this.x1 = x1
@@ -307,42 +397,90 @@ class Ball {
             this.x2 = x2
             this.y2 = y2
         }
-        const getIntersection = (l1 ,l2) => {
 
-        }
-        const getLinesIntersection = (si, sj, ti, tj, r, k, path) => {
+        const getLinesCollisionPoints = (si, sj, ti, tj, r, k, path) => {
             const ret = []
             const x1 = tj * blockSize
             const y1 = ti * blockSize
             const x2 = (tj + 1) * blockSize
             const y2 = (ti + 1) * blockSize
             if (si < ti && !isBlockIJ(ti - 1, tj)) {
-                //上边
-                let intersection = getIntersection(path, new Line(x1, y1 - r, x2, y1 - r))
+                //墙在下
+                let intersection = getIntersection(new Line(x1, y1 - r, x2, y1 - r), path)
                 if (intersection) {
                     //有交点 
                     ret.push({
-                        x0: intersection.x, //碰撞圆心坐标
-                        y0: intersection.y, 
-                        x1: intersection.x, //碰撞点坐标
-                        y1: intersection.y + r,
+                        x0: intersection[0], //碰撞圆心坐标
+                        y0: intersection[1], 
+                        x1: intersection[0], //碰撞点坐标
+                        y1: intersection[1] + r,
                         k: k  //发生碰撞方块对应的编号
                     })
                 }
             }
             if (si > ti && !isBlockIJ(ti + 1, tj)) {
-                 //下边
-                let intersection = getIntersection(path, new Line(x1, y2 + r, x2, y2 + r))
+                 //墙在上
+                let intersection = getIntersection(new Line(x1, y2 + r, x2, y2 + r), path)
+                console.log('i,j ', ti, tj)
+                console.log('x1,y1 ', x1, y1)
+                console.log('x2,y2 ', x2, y2)
+                console.log(new Line(x1, y2 + r, x2, y2 + r))
+                console.log(path)
+                console.log(intersection)
+                if (intersection) {
+                    //有交点 
+                    ret.push({
+                        x0: intersection[0], //碰撞圆心坐标
+                        y0: intersection[1], 
+                        x1: intersection[0], //碰撞点坐标
+                        y1: intersection[1] - r,
+                        k: k  //发生碰撞方块对应的编号
+                    })
+                }
             }
             if (sj < tj && !isBlockIJ(ti, tj - 1)) {
                  //左边
-                let intersection = getIntersection(path, new Line(x1 - r, y1, x1 - r, y2))
+                let intersection = getIntersection(new Line(x1 - r, y1, x1 - r, y2), path)
+                if (intersection) {
+                    //有交点 
+                    ret.push({
+                        x0: intersection[0], //碰撞圆心坐标
+                        y0: intersection[1], 
+                        x1: intersection[0] + r, //碰撞点坐标
+                        y1: intersection[1],
+                        k: k  //发生碰撞方块对应的编号
+                    })
+                }
             }
             if (sj > tj && !isBlockIJ(ti, tj + 1)) {
                 //右边
-                let intersection = getIntersection(path, new Line(x2 + r, y1, x2 + r, y2)) 
+                let intersection = getIntersection(new Line(x2 + r, y1, x2 + r, y2), path)
+                if (intersection) {
+                    //有交点 
+                    ret.push({
+                        x0: intersection[0], //碰撞圆心坐标
+                        y0: intersection[1], 
+                        x1: intersection[0] - r, //碰撞点坐标
+                        y1: intersection[1],
+                        k: k  //发生碰撞方块对应的编号
+                    })
+                }
             }
             return ret
+        }
+
+        const display = (i, j) => {
+            let s = '------'
+            s += '\n'
+            for (let di = -1; di <= 1; di++) {
+                for (let dj = -1; dj <= 1; dj++) {
+                    // console.log(isBlockIJ(i+di, j+dj))
+                    s += (isBlockIJ(i+di, j+dj) ? '1 ' : '0 ')
+                }
+                s += '\n'
+            }
+            s += '------'
+            console.log(s)
         }
 
         while (d>0) {
@@ -356,21 +494,41 @@ class Ball {
 
             let collisionPoint = null
 
+            display(i, j)
             //判断与边的交点
             for (let k=0; k<8; k++) {
-                if (!bounced[k] && isBlockIJ(i+next[k][0], j+next[k][0])) {
-                    let points = getLinesIntersection(i, j, i+next[k][0], j+next[k][0], this.r, k, path)
+                if (!bounced[(i+next[k][0])*m+(j+next[k][1])] && isBlockIJ(i+next[k][0], j+next[k][1])) {
+                    let points = getLinesCollisionPoints(i, j, i+next[k][0], j+next[k][1], this.r, k, path)
                     for (let point of points) {
                         //找到距离起点最近的交点
-                        if (!collisionPoint || distance(this.x, this.y, point.x0, point.y0) < distance(this.x, this.y, collisionPoint.x, collisionPoint.y)) 
+                        if (!collisionPoint || distance(this.x, this.y, point.x0, point.y0) < distance(this.x, this.y, collisionPoint.x0, collisionPoint.y0)) 
                             collisionPoint = point
                     }   
                 }
             }
-            
 
+            if (collisionPoint) {
+                //发生碰撞
+                console.log(collisionPoint)
+                bounced[(i+next[collisionPoint.k][0])*m+(j+next[collisionPoint.k][1])] = true
+                d -= distance(this.x, this.y, collisionPoint.x0, collisionPoint.y0)
+                this.x = collisionPoint.x0
+                this.y = collisionPoint.y0
+                this.a0 = bounce(
+                    collisionPoint.x0, 
+                    collisionPoint.y0,
+                    collisionPoint.x1,
+                    collisionPoint.y1,
+                    this.a0
+                )
+            } else {
+                this.x = nx
+                this.y = ny
+                d = 0
+            }
         }
-        
+
+
         // const updateX = () => {
         //     if (nX<this.x && isBlock(nX - this.r, nY)) {
         //         // console.log('left')
@@ -519,8 +677,8 @@ function loop() {
         if (skipping) {
             loop()
         } else {
-            requestAnimationFrame(loop)
-            // setTimeout(loop, 500)
+            if (!devMode) requestAnimationFrame(loop) 
+                else setTimeout(loop, devStep)
         }
     }
     else {
@@ -575,23 +733,29 @@ function replay() {
 window.onload = ()=>{
     init()
     canvas.onclick = handleClick
+
     //test
-    // for (let i=0; i<n*0.5; i++) 
-    // for (let j=0; j<m; j++) {
-    //     martix[i][j] = random(-30,60)
-    //     if (martix[i][j] < 0) {
-    //         if (Math.random()<0.1) martix[i][j] = -1
-    //             else martix[i][j] = 0
-    //     }
-    // }
-    // ballNums = 10
-    if (window.localStorage && localStorage.getItem('gamedata')) {
-        let data = JSON.parse(localStorage.getItem('gamedata'))
-        martix = data.martix
-        round = data.round
-        score = data.score
+    if (devMode) {
+        for (let i=0; i<n*0.8; i++) 
+        for (let j=0; j<m; j++) {
+            martix[i][j] = random(-20,10)
+            if (martix[i][j] < 0) {
+                if (Math.random()<0.1) martix[i][j] = -1
+                    else martix[i][j] = 0
+            }
+        }
         updateView()
-    } else {
-        nextRound()  
-    }  
+        // ballNums = 10
+        return
+    }
+
+    // if (window.localStorage && localStorage.getItem('gamedata')) {
+    //     let data = JSON.parse(localStorage.getItem('gamedata'))
+    //     martix = data.martix
+    //     round = data.round
+    //     score = data.score
+    //     updateView()
+    // } else {
+    //     nextRound()  
+    // }  
 }
