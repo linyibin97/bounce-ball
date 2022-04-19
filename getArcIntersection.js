@@ -71,4 +71,4 @@ function getArcIntersection (px, py, r, al, ah, line) {
   return ret
 }
 
-console.log(getArcIntersection(0, 0, 1, 270, 90, new Line(2,1,3,2)).map(a=>[a[0].toFixed(2),a[1].toFixed(2)] ))
+console.log(getArcIntersection(0, 0, 1, 270, 360, new Line(1,-1,0,0)).map(a=>[a[0].toFixed(2),a[1].toFixed(2)] ))

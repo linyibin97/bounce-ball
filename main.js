@@ -1,9 +1,9 @@
 const n = 15 //矩阵高
 const m = 10 //矩阵宽
 const interval = 3 //小球发射间隔帧数
-const devMode = true //调试
-const devStep = 20
-const collisionDispaly = []
+const devMode = false //调试
+const devStep = 100
+const debugDispaly = []
 
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
 let shooting, skipping, canskip, canskiptimer, framcount, startColor
@@ -194,14 +194,14 @@ function updateView() {
         balls.forEach(ball=>ball.draw())
 
         if (devMode)
-            collisionDispaly.filter(b=>{
-                b.n--
+            debugDispaly.filter(item=>{
+                item.n--
                 ctx.beginPath()
-                ctx.fillStyle = '#FF0000'
-                ctx.arc(b.x, b.y, 3, 0, 2*Math.PI)
+                ctx.fillStyle = item.color
+                ctx.arc(item.x, item.y, 3, 0, 2*Math.PI)
                 ctx.fill()
                 ctx.closePath()
-                return b.n>0
+                return item.n > 0
             })
     }
 }
@@ -489,14 +489,16 @@ class Ball {
             if (0 <= l+k && l+k <= lAB) {  //在线段上
                 const rx = line.x1+(l+k)*Math.cos(b/180*Math.PI)
                 const ry = line.y1+(l+k)*Math.sin(b/180*Math.PI)
-                const ra = getAngel(rx, ry, px, py)
-                if ((al <= ra && ra <= ah) || (ah <= al && (ra <= ah || ra >= al))) ret.push([rx, ry]) //在圆弧上
+                ret.push([rx, ry])
+                //const ra = getAngel(rx, ry, px, py)
+                //if ((al <= ra && ra <= ah) || (ah <= al && (ra <= ah || ra >= al))) ret.push([rx, ry]) //在圆弧上
             }
             if (Math.abs(d)!==r && 0 <= l-k && l-k <= lAB) {  //在线段上
                 const rx = line.x1+(l-k)*Math.cos(b/180*Math.PI)
                 const ry = line.y1+(l-k)*Math.sin(b/180*Math.PI)
-                const ra = getAngel(rx, ry, px, py)
-                if ((al <= ra && ra <= ah) || (ah <= al && (ra <= ah || ra >= al))) ret.push([rx, ry]) //在圆弧上
+                ret.push([rx, ry])
+                //const ra = getAngel(rx, ry, px, py)
+                //if ((al <= ra && ra <= ah) || (ah <= al && (ra <= ah || ra >= al))) ret.push([rx, ry]) //在圆弧上
             }
             return ret
         }
@@ -511,6 +513,7 @@ class Ball {
                 for (let dj = 0; dj < 2; dj++) {
                     const x1 = cx[dj]
                     const y1 = cy[di] 
+                    debugDispaly.push({x:x1,y:y1,n:10,color:'green'})
                     for (let point of getArcIntersection(x1, y1, r, angleRange[di*2+dj][0], angleRange[di*2+dj][1], path)) {
                         console.log('arc:',point[0],point[1])
                         ret.push({
@@ -572,7 +575,7 @@ class Ball {
                 if (devMode) {
                     display(i, j)
                     console.log(collisionPoint)
-                    collisionDispaly.push({x:collisionPoint.x1,y:collisionPoint.y1,n:10})
+                    // debugDispaly.push({x:collisionPoint.x1,y:collisionPoint.y1,n:10,color:'red'})
                 }
                 
                 bounced[(i+next[collisionPoint.k][0])*m+(j+next[collisionPoint.k][1])] = true
