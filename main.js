@@ -2,7 +2,7 @@ const n = 15 //矩阵高
 const m = 10 //矩阵宽
 const interval = 3 //小球发射间隔帧数
 const devMode = false //调试
-const devStep = 500
+const devStep = 50
 const debugShowAliveFrame = 10
 let debugDispaly = []
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
@@ -472,8 +472,6 @@ const getArcIntersection = (px, py, r, al, ah, line) => {
 }
 const getArcsCollisionPoints = (si, sj, ti, tj ,r ,k ,path) => {
     if (isBlockIJ(si+next[k-1][0], sj+next[k-1][1]) && isBlockIJ(si+next[k+1][0], sj+next[k+1][1])) return []
-    console.log(isBlockIJ(si+next[k-1][0], sj+next[k-1][1]), isBlockIJ(si+next[k+1][0], sj+next[k+1][1]))
-    console.log(k, '|', si,sj,' | ',si+next[k-1][0], sj+next[k-1][1], '|', si+next[k+1][0], sj+next[k+1][1])
     const ret = []
     const cx = [tj * blockSize, (tj + 1) * blockSize]
     const cy = [ti * blockSize, (ti + 1) * blockSize]
