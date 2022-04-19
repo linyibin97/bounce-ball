@@ -287,7 +287,7 @@ class Ball {
                 else return [x1,y1,lPA,l]
         }
         const distance = (x1, y1, x2, y2) => Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2))  
-        const isBlockIJ = (i, j) => 0 <= i && 0 <= j && j < m && martix[i][j] > 0 
+        const isBlockIJ = (i, j) => !(0 <= i && 0 <= j && j < m && martix[i][j] <= 0)
         const isBlockXY = (x, y) => {
             //检测x, y是否不能通过
             if (x<0 || x>WIDTH) return true
