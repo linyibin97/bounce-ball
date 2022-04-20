@@ -1,16 +1,19 @@
 const n = 15 //矩阵高
 const m = 10 //矩阵宽
 const interval = 3 //小球发射间隔帧数
-let devMode = true //调试
+let devMode = false //调试
 let devStep = 10
 const debugShowAliveFrame = 10
-const correctionAngel = 5 //修正角度
+const correctionAngel = 7 //修正角度
 let debugDispaly = []
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
-let shooting, skipping, canskip, canskiptimer, framcount, startColor
+let gameover, shooting, skipping, canskip, canskiptimer, framcount, startColor
 let canvas, ctx, eleBoard, eleRound, eleScore, eleBalls
 let ballNums, readyBalls, balls
 let round, score, nReward, martix
+const previewOn = true
+let previewLength, previewFrameTime, previewBalls, previewPrevTime
+
 
 function stateInit() {
 
@@ -33,12 +36,18 @@ function stateInit() {
     ballNums = 1   //发射球的数量
     balls = new Array() //已发射的球
     readyBalls = new Array()    //待发射的球
+    
+    previewLength = 20
+    previewFrameTime = 16.7
+    previewBalls = new Array()
+    previewPrevTime = 0
 
     //回合相关数据
     martix = Array.from(new Array(n+5), ()=>new Array(m).fill(0))
     round = 0 //回合数记录
     score = 0 //得分
     nReward = 1
+    gameover = false
 
 }
 
@@ -143,6 +152,15 @@ function updateView() {
     ctx.fillStyle = "#000"
     ctx.fillRect(0, 0, WIDTH, HEIGHT)
 
+    if (gameover) {
+        ctx.fillStyle = "#ddd"
+        ctx.font= Math.floor(blockSize)+"px"+" Arial"
+        ctx.fillText('GAME OVER', WIDTH/2, HEIGHT/2-blockSize) 
+        ctx.font= Math.floor(blockSize *0.5)+"px"+" Arial"
+        ctx.fillText('Score: '+score, WIDTH/2, HEIGHT/2+blockSize)
+        return
+    }
+
     for (let i=0; i<n; i++) {
         for (let j=0; j<m; j++) {
             //方块
@@ -169,6 +187,7 @@ function updateView() {
         }
     }
 
+    //提示线
     ctx.strokeStyle = "#aaa"
     ctx.beginPath()
     ctx.moveTo(0, deadline)
@@ -176,6 +195,7 @@ function updateView() {
     ctx.stroke()
     ctx.closePath()
 
+    //显示点击跳过
     if (shooting && canskip && !skipping) {
         ctx.fillStyle = "#ddd"
         ctx.font= Math.floor(blockSize/2)+"px"+" Arial"
@@ -187,14 +207,28 @@ function updateView() {
     // ctx.textBaseline = "top"
     // ctx.textAlign = "left"
     // ctx.fillText(`Round:${round}   Score:${score}   Balls:${ballNums}`, 0.1*blockSize, deadline+0.1*blockSize)
-
+   
+    // 更新数字
     eleRound.innerText = round
     eleScore.innerText = score
     eleBalls.innerText = shooting ? readyBalls.length : ballNums
 
     if (!shooting) {
+        //非发射阶段
         new Ball(startX, startY, RADIUS, 0, 0, startColor).draw()
+
+        if (previewOn) {
+            for (let ball of previewBalls) {
+                ctx.beginPath()
+                ctx.strokeStyle = ball.color
+                ctx.arc(ball.x, ball.y, ball.r, 0, 2*Math.PI)
+                ctx.stroke()
+                ctx.closePath()
+            }
+        }
+    
     } else {
+        //发射阶段
         balls.forEach(ball=>ball.draw())
 
         if (devMode)
@@ -237,7 +271,7 @@ function nextRound() {
                 layer[j] = round + random(Math.ceil(-round*0.1), Math.floor(round*0.1))
             }
         }
-        layer[Math.floor(Math.random()*10)] = -(1 + (Math.random()<pBlock-0.3? 1: 0)) //生成奖励球
+        layer[Math.floor(Math.random()*10)] = -(1 + (Math.random()<(pBlock-0.3)/2? 1: 0)) //生成奖励球
         martix.unshift(layer)
         return true
     }
@@ -245,6 +279,8 @@ function nextRound() {
     shooting = false
     skipping = false
     canskip = false
+    previewBalls = new Array()
+
     if (canskiptimer) {
         clearTimeout(canskiptimer)
         canskiptimer = null
@@ -576,7 +612,7 @@ class Ball {
                     collisionPoint.y1,
                     this.a0
                 )
-                eliminate(i+next[collisionPoint.k][0],j+next[collisionPoint.k][1])
+                if (shooting) eliminate(i+next[collisionPoint.k][0],j+next[collisionPoint.k][1])
             } else {
                 this.x = nx
                 this.y = ny
@@ -591,12 +627,14 @@ class Ball {
         }
 
         //奖励球
-        let i = YtoI(this.y)
-        let j = XtoJ(this.x)
-        if (0<=i && i<n && 0<=j && j<m && martix[i][j]<0) {
-            ballNums += Math.abs(martix[i][j])
-            martix[i][j] = 0
-        }
+        if (shooting) {
+            let i = YtoI(this.y)
+            let j = XtoJ(this.x)
+            if (0<=i && i<n && 0<=j && j<m && martix[i][j]<0) {
+                ballNums += Math.abs(martix[i][j])
+                martix[i][j] = 0
+            }
+        } 
     }
 }
 
@@ -637,11 +675,45 @@ function loop() {
     }
 }
 
-function handleClick(event) {
+function showPreview(x, y) {
+    if (gameover || shooting || !previewOn) return
+    let curr = Date.now()
+    if (curr - previewPrevTime < previewFrameTime) return
+    previewPrevTime = curr
+    if (y > deadline) return
+    previewBalls = new Array()
+    let ball = new Ball(startX,
+        startY,
+        RADIUS,
+        vel,
+        getAngel(x, y, startX, startY),
+        '#333'
+    )
+    for (let i=0; i<previewLength; i++) {
+        for (let j=0; j<interval; j++) {
+            ball.move()
+            if (ball.y+ball.r>HEIGHT) break
+        }
+        if (ball.y+ball.r>HEIGHT) break
+        previewBalls.push({
+            x: ball.x,
+            y: ball.y,
+            r: ball.r,
+            color: '#555'
+        })
+        
+    }
+    updateView()
+}
+
+function handleClick(x, y) {
     // console.log(event.offsetX-startX, event.offsetY-startY, getAngel(event.offsetX, event.offsetY, startX, startY))
     // return
-    
-    if (event.offsetY > deadline) {
+    if (gameover) {
+        replay()
+        return
+    }
+    if (y > deadline) {
         if (shooting && canskip) {
             skipping = true
         }
@@ -655,7 +727,7 @@ function handleClick(event) {
             startY,
             RADIUS,
             vel,
-            getAngel(event.offsetX, event.offsetY, startX, startY),
+            getAngel(x, y, startX, startY),
             i==0? startColor : `rgb(${random(32, 255)},${random(32, 255)},${random(32, 255)})`
         ))
     }
@@ -669,8 +741,10 @@ function handleClick(event) {
 }
 
 function gameOver() {
-    alert('Game Over! score:'+score)
-    replay()
+    gameover = true
+    updateView()
+    // alert('Game Over! score:'+score)
+    // replay()
 }
 
 function replay() {
@@ -683,8 +757,26 @@ function replay() {
 
 window.onload = ()=>{
     init()
-    canvas.onclick = handleClick
-
+    canvas.onclick = (event) => {
+        // console.log(event.offsetX, event.offsetY)
+        handleClick(event.offsetX, event.offsetY)
+    }
+    canvas.onmousemove = (event) => {
+        showPreview(event.offsetX, event.offsetY)
+    }
+    canvas.ontouchend = (event) => {
+        // console.log(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
+        //             event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop)
+        handleClick(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
+                    event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop)
+        event.preventDefault()
+    }
+    canvas.ontouchmove = (event) => {
+        // console.log(event)
+        showPreview(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
+                    event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop)
+        event.preventDefault()
+    }
     //test
     if (devMode) {
         for (let i=0; i<n*0.8; i++) 
