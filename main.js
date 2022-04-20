@@ -681,28 +681,29 @@ function showPreview(x, y) {
     let curr = Date.now()
     if (curr - previewPrevTime < previewFrameTime) return
     previewPrevTime = curr
-    if (y > deadline) return
     previewBalls = new Array()
-    let ball = new Ball(startX,
-        startY,
-        RADIUS,
-        vel,
-        getAngel(x, y, startX, startY),
-        '#333'
-    )
-    for (let i=0; i<previewLength; i++) {
-        for (let j=0; j<interval; j++) {
-            ball.move()
+    if (y < deadline) {
+        let ball = new Ball(startX,
+            startY,
+            RADIUS,
+            vel,
+            getAngel(x, y, startX, startY),
+            '#333'
+        )
+        for (let i=0; i<previewLength; i++) {
+            for (let j=0; j<interval; j++) {
+                ball.move()
+                if (ball.y+ball.r>HEIGHT) break
+            }
             if (ball.y+ball.r>HEIGHT) break
+            previewBalls.push({
+                x: ball.x,
+                y: ball.y,
+                r: ball.r,
+                color: '#555'
+            })
+            
         }
-        if (ball.y+ball.r>HEIGHT) break
-        previewBalls.push({
-            x: ball.x,
-            y: ball.y,
-            r: ball.r,
-            color: '#555'
-        })
-        
     }
     updateView()
 }
