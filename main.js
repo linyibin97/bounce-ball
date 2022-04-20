@@ -149,8 +149,9 @@ const getAngel = (tx,ty,sx,sy) => {
 
 //更新视图
 function updateView() {
-    ctx.fillStyle = "#000"
-    ctx.fillRect(0, 0, WIDTH, HEIGHT)
+    // ctx.fillStyle = "#000"
+    // ctx.fillRect(0, 0, WIDTH, HEIGHT)
+    ctx.clearRect(0, 0, WIDTH, HEIGHT)
 
     if (gameover) {
         ctx.fillStyle = "#ddd"
@@ -176,7 +177,7 @@ function updateView() {
             //奖励球
             if (martix[i][j] < 0) {
                 ctx.beginPath()
-                ctx.fillStyle = "#222"
+                ctx.fillStyle = "rgba(255,255,255,0.1)"
                 ctx.arc((j+0.5) * blockSize, (i+0.5) * blockSize,  blockSize/3, 0, 2*Math.PI)
                 ctx.fill()
                 ctx.closePath()
