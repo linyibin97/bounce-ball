@@ -442,7 +442,7 @@ const getLinesCollisionPoints = (si, sj, ti, tj, r, k, path) => {
     }
     return ret
 }
-const getArcIntersection = (px, py, r, al, ah, line) => {
+const getArcIntersection = (px, py, r, line) => {
     //圆心P(px,py) 半径r 圆弧角度为[al,ah] l:A(x1,y1)→B(x2,y2)表示线段
     //求圆弧与线段交点
     const b = getAngel(line.x2, line.y2, line.x1, line.y1) //AB向量角
@@ -490,7 +490,7 @@ const getArcsCollisionPoints = (si, sj, ti, tj ,r ,k ,path) => {
                     color:'green'
                 })
             }
-            for (let point of getArcIntersection(x1, y1, r, angleRange[di*2+dj][0], angleRange[di*2+dj][1], path)) {
+            for (let point of getArcIntersection(x1, y1, r, path)) {
                 ret.push({
                     x0: point[0], //碰撞圆心坐标
                     y0: point[1], 
