@@ -535,7 +535,7 @@ class Ball {
     }
     move() {
         let d = this.vel    //前进距离
-        let bounced = {} //记录反弹过的方块
+        let bounced = null //记录反弹过的方块
 
         while (d>0) {
             let i = YtoI(this.y)
@@ -550,7 +550,7 @@ class Ball {
             let collisionPoint = null
             //判断与边的交点
             for (let k=0; k<8; k++) {
-                if (!bounced[(i+next[k][0])*m+(j+next[k][1])] && isBlockIJ(i+next[k][0], j+next[k][1])) {
+                if ((bounced !== (i+next[k][0])*m+(j+next[k][1])) && isBlockIJ(i+next[k][0], j+next[k][1])) {
                     let points = new Array().concat(
                         getLinesCollisionPoints(i, j, i+next[k][0], j+next[k][1], this.r, k, path),
                         getArcsCollisionPoints(i, j, i+next[k][0], j+next[k][1], this.r, k, path)
@@ -582,7 +582,7 @@ class Ball {
                     })
                 }
                 
-                bounced[(i+next[collisionPoint.k][0])*m+(j+next[collisionPoint.k][1])] = true
+                bounced = (i+next[collisionPoint.k][0])*m+(j+next[collisionPoint.k][1])
                 d -= distance(this.x, this.y, collisionPoint.x0, collisionPoint.y0)
                 this.x = collisionPoint.x0
                 this.y = collisionPoint.y0
