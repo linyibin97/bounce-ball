@@ -1,8 +1,8 @@
 const n = 15 //矩阵高
 const m = 10 //矩阵宽
 const interval = 3 //小球发射间隔帧数
-let devMode = false //调试
-let devStep = 0
+let devMode = true //调试
+let devStep = 10
 const debugShowAliveFrame = 10
 let debugDispaly = []
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
@@ -151,7 +151,7 @@ function updateView() {
                 ctx.strokeStyle = "#eee"
                 ctx.strokeRect(j * blockSize, i * blockSize, blockSize, blockSize)
                 ctx.fillStyle = "#eee"
-                ctx.font= Math.floor(blockSize/2)+"px"+" Arial"
+                ctx.font= Math.floor(blockSize*0.4)+"px"+" Arial"
                 ctx.fillText(martix[i][j], (j+0.5) * blockSize, (i+0.5) * blockSize)
             }
             //奖励球
@@ -236,7 +236,7 @@ function nextRound() {
                 layer[j] = round + random(Math.ceil(-round*0.1), Math.floor(round*0.1))
             }
         }
-        layer[Math.floor(Math.random()*10)] = -nReward //生成奖励球
+        layer[Math.floor(Math.random()*10)] = -(1 + (Math.random()<pBlock-0.3? 1: 0)) //生成奖励球
         martix.unshift(layer)
         return true
     }
@@ -279,92 +279,25 @@ const eliminate = (i, j) => {
         martix[i][j] = Math.max(0, martix[i][j] - 1)
     }
 }
-const getIntersection = (l1 ,l2) => {
-    const Point = function (x,y) {
-        this.x = x;
-        this.y = y;
-    }
-    const vectorCross= (v1,v2) => {
-        return v1[0]*v2[1]-v2[0]*v1[1];
-    }
-    //点p在线段point1——point2上，且是有交点的前提下
-    const isPointInLine = (point1,point2,p) => {
-        let minX=min(point1.x,point2.x);
-        let minY=min(point1.y,point2.y);
-        let maxX=max(point1.x,point2.x);
-        let maxY=max(point1.y,point2.y);
-        if(p.x>=minX&&p.x<=maxX&&p.y>=minY&&p.y<=maxY&&vectorCross(getLine(point1,p),getLine(p,point2))===0){
-            return true;
-        }
-        return false;    
-    }
-    const update = (x,y,arr) => {//获取坐标最小的点
-        if(arr.length===0||x<arr[0]||(x===arr[0]&&y<arr[1])){
-            arr=[x,y];        
-        }
-        return arr;
-    }
-    const min = (a,b) => {
-        return Math.min(a,b);
-    }
-    const max = (a,b) => {
-        return Math.max(a,b);
-    }
-    const getLine = (Q1,P1) => {
-        let Q1P1=[P1.x-Q1.x,P1.y-Q1.y];
-        return Q1P1;
-    }
-    let P1 = new Point(l1.x1,l1.y1);
-    let P2 = new Point(l1.x2,l1.y2);
-    let Q1 = new Point(l2.x1,l2.y1);
-    let Q2 = new Point(l2.x2,l2.y2);
-    let arr = [];
-    if (Math.max(P1.x, P2.x) < Math.min(Q1.x, Q2.x) ||
-        Math.max(Q1.x, Q2.x) < Math.min(P1.x, P2.x) ||
-        Math.max(P1.y, P2.y) < Math.min(Q1.y, Q2.y) ||
-        Math.max(Q1.y, Q2.y) < Math.min(P1.y, P2.y)) {
-        return null;
-    }
-    let Q1P1=getLine(Q1,P1);
-    let Q1P2=getLine(Q1,P2);
-    let Q1Q2=getLine(Q1,Q2);
-    let P1P2=getLine(P1,P2);
-    let P1Q1=getLine(P1,Q1);
-    let P1Q2=getLine(P1,Q2);
-    let P2Q2=getLine(P2,Q2);
-    let crossV=vectorCross(Q1P1,Q1Q2)*vectorCross(Q1P2,Q1Q2);
-    let crossV2=vectorCross(P1Q1,P1P2)*vectorCross(P1Q2,P1P2);
-    if(crossV>0||crossV2>0){
-        return null;
-    }
-    //let crossP1P2_Q1Q2=vectorCross(P1P2,Q1Q2);
-    if(vectorCross(Q1P1,P1Q2)===0||vectorCross(Q1P2,P2Q2)===0||vectorCross(Q1P2,P2Q2)===0){//共线
-        let isQ1inP1P2=isPointInLine(P1,P2,Q1);
-        if(isQ1inP1P2){
-            arr=update(Q1.x,Q1.y,arr);
-        }
-        let isQ2inP1P2=isPointInLine(P1,P2,Q2);
-        if(isQ2inP1P2){
-            arr=update(Q2.x,Q2.y,arr);
-        }
-        let isP1inQ1Q2=isPointInLine(Q1,Q2,P1);
-        if(isP1inQ1Q2){
-            arr=update(P1.x,P1.y,arr);
-        }
-        let isP2inQ1Q2=isPointInLine(Q1,Q2,P2);
-        if(isP2inQ1Q2){
-            arr=update(P2.x,P2.y,arr);
-        }
-    } else {
-        let s1=Math.abs(vectorCross(Q1Q2,Q1P2))*0.5;
-        let s2=Math.abs(vectorCross(Q1Q2,Q1P1))*0.5;
-        let lamda=s1/s2;
-        let x,y;
-        x=(P2.x+lamda*P1.x)/(1+lamda);
-        y=(P2.y+lamda*P1.y)/(1+lamda);
-        arr=[x,y];
-    }
-    return arr.length>0 ? arr : null
+const getIntersection = (line ,path) => {
+    //本问题中 line为垂直线与水平线 只针对这两种线段做判断
+    if (line.x1 == line.x2) {
+        // 垂直线
+        if (!( Math.min(path.x1,path.x2)<=line.x1 && line.x1<=Math.max(path.x1,path.x2) )) return null
+        if (path.x1 == path.x2) return null
+        const y0 = (line.x1 - path.x1) / (path.x1 - path.x2) * (path.y1 - path.y2) + path.y1
+        if (!( Math.min(line.y1,line.y2)<=y0 && y0<=Math.max(line.y1,line.y2) )) return null
+        return [line.x1, y0]
+    } 
+    if (line.y1 == line.y2) {
+        // 水平线
+        if (!( Math.min(path.y1,path.y2)<=line.y1 && line.y1<=Math.max(path.y1,path.y2) )) return null
+        if (path.y1 == path.y2) return null
+        const x0 = (line.y1 - path.y1) / (path.y1 - path.y2) * (path.x1 - path.x2) + path.x1
+        if (!( Math.min(line.x1,line.x2)<=x0 && x0<=Math.max(line.x1,line.x2) )) return null
+        return [x0, line.y1]
+    } 
+    return null
 }
 const distance = (x1, y1, x2, y2) => Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2))  
 const isBlockIJ = (i, j) => !(0 <= i && 0 <= j && j < m && martix[i][j] <= 0)
@@ -755,14 +688,14 @@ window.onload = ()=>{
     if (devMode) {
         for (let i=0; i<n*0.8; i++) 
         for (let j=0; j<m; j++) {
-            martix[i][j] = random(-100,30)
+            martix[i][j] = random(-10000,3000)
             if (martix[i][j] < 0) {
                 if (Math.random()<0.1) martix[i][j] = -1
                     else martix[i][j] = 0
             }
         }
         updateView()
-        // ballNums = 100
+        ballNums = 10000
         return
     }
 
