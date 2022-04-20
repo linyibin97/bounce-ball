@@ -153,15 +153,6 @@ function updateView() {
     // ctx.fillRect(0, 0, WIDTH, HEIGHT)
     ctx.clearRect(0, 0, WIDTH, HEIGHT)
 
-    if (gameover) {
-        ctx.fillStyle = "#ddd"
-        ctx.font= Math.floor(blockSize)+"px"+" Arial"
-        ctx.fillText('GAME OVER', WIDTH/2, HEIGHT/2-blockSize) 
-        ctx.font= Math.floor(blockSize *0.5)+"px"+" Arial"
-        ctx.fillText('Score: '+score, WIDTH/2, HEIGHT/2+blockSize)
-        return
-    }
-
     for (let i=0; i<n; i++) {
         for (let j=0; j<m; j++) {
             //方块
@@ -361,7 +352,7 @@ const getLinesCollisionPoints = (si, sj, ti, tj, r, k, path) => {
     const y2 = (ti + 1) * blockSize
     if (si < ti && !isBlockIJ(ti - 1, tj)) {
         //墙在下
-        if (devMode) debugDispaly.push({type:'line', x1:x1, y1:y1 - r, x2:x2, y2:y1 - r, alive:debugShowAliveFrame, color: 'blue'})
+        if (devMode && shooting) debugDispaly.push({type:'line', x1:x1, y1:y1 - r, x2:x2, y2:y1 - r, alive:debugShowAliveFrame, color: 'blue'})
         let intersection = getIntersection(new Line(x1, y1 - r, x2, y1 - r), path)
         if (intersection) {
             //有交点 
@@ -376,7 +367,7 @@ const getLinesCollisionPoints = (si, sj, ti, tj, r, k, path) => {
     }
     if (si > ti && !isBlockIJ(ti + 1, tj)) {
          //墙在上
-        if (devMode) debugDispaly.push({type:'line', x1:x1, y1:y2 + r, x2:x2, y2:y2 + r, alive:debugShowAliveFrame, color: 'blue'})
+        if (devMode && shooting) debugDispaly.push({type:'line', x1:x1, y1:y2 + r, x2:x2, y2:y2 + r, alive:debugShowAliveFrame, color: 'blue'})
         let intersection = getIntersection(new Line(x1, y2 + r, x2, y2 + r), path)
         if (intersection) {
             //有交点 
@@ -391,7 +382,7 @@ const getLinesCollisionPoints = (si, sj, ti, tj, r, k, path) => {
     }
     if (sj < tj && !isBlockIJ(ti, tj - 1)) {
          //左边
-        if (devMode) debugDispaly.push({type:'line', x1:x1 - r, y1:y1, x2:x1 - r, y2:y2, alive:debugShowAliveFrame, color: 'blue'})
+        if (devMode && shooting) debugDispaly.push({type:'line', x1:x1 - r, y1:y1, x2:x1 - r, y2:y2, alive:debugShowAliveFrame, color: 'blue'})
         let intersection = getIntersection(new Line(x1 - r, y1, x1 - r, y2), path)
         if (intersection) {
             //有交点 
@@ -406,7 +397,7 @@ const getLinesCollisionPoints = (si, sj, ti, tj, r, k, path) => {
     }
     if (sj > tj && !isBlockIJ(ti, tj + 1)) {
         //右边
-        if (devMode) debugDispaly.push({type:'line', x1:x2 + r, y1:y1, x2:x2 + r, y2:y2, alive:debugShowAliveFrame, color: 'blue'})
+        if (devMode && shooting) debugDispaly.push({type:'line', x1:x2 + r, y1:y1, x2:x2 + r, y2:y2, alive:debugShowAliveFrame, color: 'blue'})
         let intersection = getIntersection(new Line(x2 + r, y1, x2 + r, y2), path)
         if (intersection) {
             //有交点 
@@ -482,7 +473,7 @@ const getArcsCollisionPoints = (si, sj, ti, tj ,r ,k ,path) => {
     // }
 
     const calculate = (x1, y1) => {
-        if (devMode) {
+        if (devMode && shooting) {
             debugDispaly.push({
                 type:'arc',
                 x:x1,
@@ -573,7 +564,7 @@ class Ball {
             let ny = this.y + Math.sin(this.a0/180*Math.PI)*d
             let path = new Line(this.x, this.y, nx, ny)
 
-            if (devMode) debugDispaly.push({type:'line', x1:this.x, y1:this.y, x2:nx, y2:ny, alive:debugShowAliveFrame, color: 'skyblue'})
+            if (devMode && shooting) debugDispaly.push({type:'line', x1:this.x, y1:this.y, x2:nx, y2:ny, alive:debugShowAliveFrame, color: 'skyblue'})
 
             let collisionPoint = null
             //判断与边的交点
@@ -593,7 +584,7 @@ class Ball {
 
             if (collisionPoint) {
                 //发生碰撞
-                if (devMode) {
+                if (devMode && shooting) {
                     debugDispaly.push({
                         type: 'point',
                         x:collisionPoint.x1,
@@ -752,7 +743,15 @@ function handleClick(x, y) {
 
 function gameOver() {
     gameover = true
-    updateView()
+
+    ctx.fillStyle = "rgba(0, 0, 0, 0.6)"
+    ctx.fillRect(0, 0, WIDTH, HEIGHT)
+    ctx.fillStyle = "#ddd"
+    ctx.font= Math.floor(blockSize)+"px"+" Arial"
+    ctx.fillText('GAME OVER', WIDTH/2, HEIGHT/2-blockSize) 
+    ctx.font= Math.floor(blockSize *0.5)+"px"+" Arial"
+    ctx.fillText('Score: '+score, WIDTH/2, HEIGHT/2+blockSize)
+    
     // alert('Game Over! score:'+score)
     // replay()
 }
