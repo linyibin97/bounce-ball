@@ -189,10 +189,18 @@ function updateView() {
     }
 
     //提示线
+    // ctx.strokeStyle = "#aaa"
+    // ctx.beginPath()
+    // ctx.moveTo(0, deadline)
+    // ctx.lineTo(WIDTH, deadline)
+    // ctx.stroke()
+    // ctx.closePath()
     ctx.strokeStyle = "#aaa"
     ctx.beginPath()
-    ctx.moveTo(0, deadline)
-    ctx.lineTo(WIDTH, deadline)
+    for (let i=0; i<50; i++) {
+        ctx.moveTo(i/50*WIDTH, deadline)
+        ctx.lineTo((i+0.5)/50*WIDTH, deadline)
+    }
     ctx.stroke()
     ctx.closePath()
 
