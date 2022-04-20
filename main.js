@@ -189,7 +189,7 @@ function updateView() {
 
     eleRound.innerText = round
     eleScore.innerText = score
-    eleBalls.innerText = ballNums
+    eleBalls.innerText = shooting ? readyBalls.length : ballNums
 
     if (!shooting) {
         new Ball(startX, startY, RADIUS, 0, 0, startColor).draw()
