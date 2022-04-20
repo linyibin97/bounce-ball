@@ -4,6 +4,7 @@ const interval = 3 //小球发射间隔帧数
 let devMode = true //调试
 let devStep = 10
 const debugShowAliveFrame = 10
+const correctionAngel = 5 //修正角度
 let debugDispaly = []
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
 let shooting, skipping, canskip, canskiptimer, framcount, startColor
@@ -151,7 +152,7 @@ function updateView() {
                 ctx.strokeStyle = "#eee"
                 ctx.strokeRect(j * blockSize, i * blockSize, blockSize, blockSize)
                 ctx.fillStyle = "#eee"
-                ctx.font= Math.floor(blockSize*0.4)+"px"+" Arial"
+                ctx.font= Math.floor(blockSize*(martix[i][j]<1000? 0.4: 0.3))+"px"+" Arial"
                 ctx.fillText(martix[i][j], (j+0.5) * blockSize, (i+0.5) * blockSize)
             }
             //奖励球
@@ -582,11 +583,11 @@ class Ball {
                 d = 0
             }
 
-            //限制运动角度不能在水平+-10度内 会导致消除过快或者无限循环
-            if (0 <= this.a0 && this.a0 < 10) this.a0 = 10
-            if (170 < this.a0 && this.a0 < 180) this.a0 = 170
-            if (180 <= this.a0 && this.a0 < 190) this.a0 = 190
-            if (350 <= this.a0 && this.a0 < 360) this.a0 = 350
+            //限制运动角度不能在水平+-correctionAngel内 会导致消除过快或者无限循环
+            if (0 <= this.a0 && this.a0 < correctionAngel) this.a0 = correctionAngel
+            if (180 - correctionAngel < this.a0 && this.a0 < 180) this.a0 = 180 - correctionAngel
+            if (180 <= this.a0 && this.a0 < 180 + correctionAngel) this.a0 = 180 + correctionAngel
+            if (360 - correctionAngel < this.a0 && this.a0 < 360) this.a0 = 360 - correctionAngel
         }
 
         //奖励球
