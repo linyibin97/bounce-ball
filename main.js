@@ -471,35 +471,84 @@ const getArcIntersection = (px, py, r, line) => {
     return ret
 }
 const getArcsCollisionPoints = (si, sj, ti, tj ,r ,k ,path) => {
-    if (isBlockIJ(si+next[k-1][0], sj+next[k-1][1]) && isBlockIJ(si+next[k+1][0], sj+next[k+1][1])) return []
-    const ret = []
-    const cx = [tj * blockSize, (tj + 1) * blockSize]
-    const cy = [ti * blockSize, (ti + 1) * blockSize]
-    const angleRange = [[90, 180], [0, 90], [270, 360], [180, 270]] //有bug 暂时没用
-    for (let di = 0; di < 2; di++) {
-        for (let dj = 0; dj < 2; dj++) {
-            const x1 = cx[dj]
-            const y1 = cy[di] 
-            if (devMode) {
-                debugDispaly.push({
-                    type:'arc',
-                    x:x1,
-                    y:y1,
-                    r:r,
-                    alive: debugShowAliveFrame,
-                    color:'green'
-                })
-            }
-            for (let point of getArcIntersection(x1, y1, r, path)) {
-                ret.push({
-                    x0: point[0], //碰撞圆心坐标
-                    y0: point[1], 
-                    x1: x1, //碰撞点坐标
-                    y1: y1,
-                    k: k  //发生碰撞方块对应的编号
-                })
-            }
+    // if (isBlockIJ(si+next[k-1][0], sj+next[k-1][1]) && isBlockIJ(si+next[k+1][0], sj+next[k+1][1])) return []
+    // const ret = []
+    // const cx = [tj * blockSize, (tj + 1) * blockSize]
+    // const cy = [ti * blockSize, (ti + 1) * blockSize]
+    // const angleRange = [[90, 180], [0, 90], [270, 360], [180, 270]] //有bug 暂时没用
+    // for (let di = 0; di < 2; di++) {
+    //     for (let dj = 0; dj < 2; dj++) {
+    //         const x1 = cx[dj]
+    //         const y1 = cy[di] 
+    //         if (devMode) {
+    //             debugDispaly.push({
+    //                 type:'arc',
+    //                 x:x1,
+    //                 y:y1,
+    //                 r:r,
+    //                 alive: debugShowAliveFrame,
+    //                 color:'green'
+    //             })
+    //         }
+    //         for (let point of getArcIntersection(x1, y1, r, path)) {
+    //             ret.push({
+    //                 x0: point[0], //碰撞圆心坐标
+    //                 y0: point[1], 
+    //                 x1: x1, //碰撞点坐标
+    //                 y1: y1,
+    //                 k: k  //发生碰撞方块对应的编号
+    //             })
+    //         }
+    //     }
+    // }
+
+    const calculate = (x1, y1) => {
+        if (devMode) {
+            debugDispaly.push({
+                type:'arc',
+                x:x1,
+                y:y1,
+                r:r,
+                alive: debugShowAliveFrame,
+                color:'green'
+            })
         }
+        for (let point of getArcIntersection(x1, y1, r, path)) {
+            ret.push({
+                x0: point[0], //碰撞圆心坐标
+                y0: point[1], 
+                x1: x1, //碰撞点坐标
+                y1: y1,
+                k: k  //发生碰撞方块对应的编号
+            })
+        }
+    }
+    const tx = [tj * blockSize, (tj + 1) * blockSize]
+    const ty = [ti * blockSize, (ti + 1) * blockSize]
+    const ret = []
+    if (si < ti) {
+        //左上角
+        if (!(isBlockIJ(ti-1, tj) || isBlockIJ(ti-1, tj-1) || isBlockIJ(ti, tj-1))) calculate(tx[0], ty[0])
+        //右上角
+        if (!(isBlockIJ(ti-1, tj) || isBlockIJ(ti-1, tj+1) || isBlockIJ(ti, tj+1))) calculate(tx[1], ty[0])
+    }
+    if (si == ti && sj < tj) {
+        //左上角
+        if (!(isBlockIJ(ti-1, tj) || isBlockIJ(ti-1, tj-1) || isBlockIJ(ti, tj-1))) calculate(tx[0], ty[0])
+        //左下角
+        if (!(isBlockIJ(ti+1, tj) || isBlockIJ(ti+1, tj-1) || isBlockIJ(ti, tj-1))) calculate(tx[0], ty[1])
+    }
+    if (si == ti && sj > tj) {
+        //右上角
+        if (!(isBlockIJ(ti-1, tj) || isBlockIJ(ti-1, tj+1) || isBlockIJ(ti, tj+1))) calculate(tx[1], ty[0])
+        //右下角
+        if (!(isBlockIJ(ti+1, tj) || isBlockIJ(ti+1, tj+1) || isBlockIJ(ti, tj+1))) calculate(tx[1], ty[1])
+    }
+    if (si > ti) {
+        //左下角
+        if (!(isBlockIJ(ti+1, tj) || isBlockIJ(ti+1, tj-1) || isBlockIJ(ti, tj-1))) calculate(tx[0], ty[1])
+        //右下角
+        if (!(isBlockIJ(ti+1, tj) || isBlockIJ(ti+1, tj+1) || isBlockIJ(ti, tj+1))) calculate(tx[1], ty[1])
     }
     return ret
 }
