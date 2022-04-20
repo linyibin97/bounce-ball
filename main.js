@@ -11,8 +11,7 @@ let gameover, shooting, skipping, canskip, canskiptimer, framcount, startColor
 let canvas, ctx, eleBoard, eleRound, eleScore, eleBalls
 let ballNums, readyBalls, balls
 let round, score, nReward, martix
-const previewOn = true
-let previewLength, previewFrameTime, previewBalls, previewPrevTime
+let previewOn, previewLength, previewFrameTime, previewBalls, previewPrevTime
 
 
 function stateInit() {
@@ -37,10 +36,7 @@ function stateInit() {
     balls = new Array() //已发射的球
     readyBalls = new Array()    //待发射的球
     
-    previewLength = 20
-    previewFrameTime = 16.7
     previewBalls = new Array()
-    previewPrevTime = 0
 
     //回合相关数据
     martix = Array.from(new Array(n+5), ()=>new Array(m).fill(0))
@@ -48,7 +44,6 @@ function stateInit() {
     score = 0 //得分
     nReward = 1
     gameover = false
-
 }
 
 function init() {
@@ -123,6 +118,11 @@ function init() {
     eleRound = document.getElementById('round')
     eleScore = document.getElementById('score')
     eleBalls = document.getElementById('balls')
+
+    previewOn = true
+    previewLength = 20
+    previewFrameTime = 16.7
+    previewPrevTime = 0
 
     stateInit()
 }
@@ -294,7 +294,7 @@ function nextRound() {
     }
 
     if (window.localStorage) {
-        window.localStorage.setItem('gamedata', JSON.stringify({martix, round, score, ballNums, startX}))
+        window.localStorage.setItem('gamedata', JSON.stringify({martix, round, score, ballNums, startX:startX/WIDTH}))
     }
 
     updateView()
@@ -761,8 +761,12 @@ window.onload = ()=>{
         // console.log(event.offsetX, event.offsetY)
         handleClick(event.offsetX, event.offsetY)
     }
+
     canvas.onmousemove = (event) => {
         showPreview(event.offsetX, event.offsetY)
+    }
+    canvas.ontouchstart =(event) => {
+        event.preventDefault()
     }
     canvas.ontouchend = (event) => {
         // console.log(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
@@ -798,7 +802,7 @@ window.onload = ()=>{
         round = data.round || round
         score = data.score || score
         ballNums = data.ballNums || ballNums
-        startX = data.startX || startX
+        startX = data.startX*WIDTH || startX
         updateView()
     } else {
         nextRound()  
