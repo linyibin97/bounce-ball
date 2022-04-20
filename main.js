@@ -765,13 +765,16 @@ window.onload = ()=>{
     canvas.onmousemove = (event) => {
         showPreview(event.offsetX, event.offsetY)
     }
-    canvas.ontouchstart =(event) => {
-        event.preventDefault()
-    }
     canvas.ontouchend = (event) => {
         // console.log(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
         //             event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop)
         handleClick(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
+                    event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop)
+        event.preventDefault()
+    }
+    canvas.ontouchstart =(event) => {
+        // console.log(event)
+        showPreview(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
                     event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop)
         event.preventDefault()
     }
