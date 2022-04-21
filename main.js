@@ -7,7 +7,7 @@ const correctionAngel = 7 //修正角度
 let debugDispaly = []
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
 let gameover, shooting, skipping, canskip, canskiptimer, framecount, startColor, userConfig
-let canvas, ctx, eleRound, eleScore, eleBalls, elegameover, elefinalscore, eleSpeed, elePreview, eledevMode, eleSettings
+let app, canvas, ctx, eleRound, eleScore, eleBalls, elegameover, elefinalscore, eleSpeed, elePreview, eledevMode, eleSettings
 let ballNums, readyBalls, balls
 let round, score, nReward, martix
 let previewLength, previewFrameTime, previewBalls, previewPrevTime
@@ -62,7 +62,7 @@ function init() {
     eleBoard.style.width = WIDTH + "px"
     document.documentElement.style.fontSize = Math.floor(WIDTH/30) + 'px'
     
-    const app = document.querySelector('.app')
+    app = document.querySelector('.app')
     app.appendChild(eleBoard)
     app.appendChild(canvas)
     eleRound = document.getElementById('round')
@@ -102,6 +102,7 @@ function init() {
     stateInit()
 
     canvas.onclick = (event) => {
+        // console.log('click')
         // console.log(event.offsetX, event.offsetY)
         handleClick(event.offsetX, event.offsetY)
     }
@@ -109,16 +110,18 @@ function init() {
         showPreview(event.offsetX, event.offsetY)
     }
     canvas.ontouchend = (event) => {
-        // console.log(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
-        //             event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop)
-        handleClick(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
-                    event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop)
+        // console.log('touch')
+        // console.log(app.offsetTop,app.offsetLeft)
+        // console.log(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft - app.offsetLeft, 
+        //             event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop - app.offsetTop)
+        handleClick(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft - app.offsetLeft, 
+                    event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop - app.offsetTop)
         event.preventDefault()
     }
     canvas.ontouchmove = (event) => {
         // console.log(event)
-        showPreview(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
-                    event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop)
+        showPreview(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft - app.offsetLeft, 
+                    event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop - app.offsetTop)
         event.preventDefault()
     }
     
