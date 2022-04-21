@@ -822,7 +822,7 @@ function gameOverClick() {
 }
 
 function replay() {
-    closeMenu()
+    eleSettings.style.display = 'none'
     if (window.localStorage) {
         window.localStorage.removeItem('gamedata')
     }
