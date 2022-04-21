@@ -815,6 +815,7 @@ window.onload = ()=>{
         score = data.score || score
         ballNums = data.ballNums || ballNums
         startX = data.startX*WIDTH || startX
+        if (RADIUS<startX && startX<WIDTH-RADIUS) startX = Math.floor(WIDTH/2)
         updateView()
     } else {
         nextRound()  
