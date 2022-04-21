@@ -7,11 +7,11 @@ const debugShowAliveFrame = 10
 const correctionAngel = 7 //修正角度
 let debugDispaly = []
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
-let gameover, shooting, skipping, canskip, canskiptimer, framcount, startColor
-let canvas, ctx, eleBoard, eleRound, eleScore, eleBalls
+let gameover, shooting, skipping, canskip, canskiptimer, framcount, startColor, userConfig
+let canvas, ctx, eleRound, eleScore, eleBalls, elegameover, elefinalscore
 let ballNums, readyBalls, balls
 let round, score, nReward, martix
-let previewOn, previewLength, previewFrameTime, previewBalls, previewPrevTime
+let previewLength, previewFrameTime, previewBalls, previewPrevTime
 
 
 function stateInit() {
@@ -25,6 +25,7 @@ function stateInit() {
     startColor = "#FFC600"    //发射球的颜色
 
     //运行状态
+    pausing = false
     shooting = false
     skipping = false
     canskip = false
@@ -47,39 +48,12 @@ function stateInit() {
 }
 
 function init() {
-    // eleBoard = document.querySelector('.board')
-    // canvas = document.querySelector("canvas")
-
-    canvas = document.createElement('canvas')
-    eleBoard = document.createElement('div')
-    eleBoard.className = "board"
-    eleBoard.innerHTML = `
-        <div class="iconitem">
-            <a href="https://github.com/linyibin97/bounce-ball"><span class="iconfont">&#xe645;</span></a>
-        </div>
-        <div class="items">
-            <span class="iconfont">&#xe65e;</span>
-            <span>Round</span>
-            <span id="round"></span>
-        </div>
-        <div class="items">
-            <span class="iconfont">&#xe64b;</span>
-            <span>Score</span>                
-            <span id="score"></span>
-        </div>
-        <div class="items">
-            <span class="iconfont">&#xe711;</span>
-            <span>×</span>   
-            <span id="balls"></span>
-        </div>
-        <div class="iconitem" onclick="replay()">
-            <span class="iconfont">&#xe6a4;</span>               
-        </div>`
-    
+    canvas = document.getElementById('canvas')
+    const eleBoard = document.querySelector('.board')
     //自适应窗口
-    let windowWidth = document.documentElement.clientWidth || document.body.clientWidth
-    let windowHeight = document.documentElement.clientHeight || document.body.clientHeight
-    if (windowHeight/windowWidth>5.2/3) {
+    const windowWidth = document.documentElement.clientWidth || document.body.clientWidth
+    const windowHeight = document.documentElement.clientHeight || document.body.clientHeight
+    if (windowHeight/windowWidth>5.3/3) {
         WIDTH = Math.floor(windowWidth) - 4
         HEIGHT = Math.floor(WIDTH/3*5)
     } else {  
@@ -88,10 +62,20 @@ function init() {
     }
     eleBoard.style.width = WIDTH + "px"
     document.documentElement.style.fontSize = Math.floor(WIDTH/30) + 'px'
-        
+    
+    const app = document.querySelector('.app')
+    app.appendChild(eleBoard)
+    app.appendChild(canvas)
+    eleRound = document.getElementById('round')
+    eleScore = document.getElementById('score')
+    eleBalls = document.getElementById('balls')
+    elegameover = document.querySelector('.gameover')
+    elefinalscore = document.getElementById('finalscore')
     // WIDTH = 480
     // HEIGHT = Math.floor(WIDTH/3*5)
     // console.log(windowHeight,windowWidth,WIDTH,HEIGHT)
+    app.style.height = WIDTH * (5.3/3) + 'px'
+
 
     //移动端适配
     const ratio = Math.max(window.devicePixelRatio || 1, 1)
@@ -101,30 +85,56 @@ function init() {
     canvas.style.height = HEIGHT + 'px'
     ctx = canvas.getContext("2d")
     ctx.scale(ratio,ratio)
-    
-    // console.log(ratio,canvas.width,canvas.height)
-
-    // ctx = canvas.getContext("2d")
-    // canvas.width = WIDTH
-
     ctx.fillStyle = "#000"
     ctx.fillRect(0, 0, WIDTH, HEIGHT)    
     ctx.textBaseline = "middle"
     ctx.textAlign = "center"
 
-    let wrapper = document.querySelector('.wrapper')
-    wrapper.appendChild(eleBoard)
-    wrapper.appendChild(canvas)
-    eleRound = document.getElementById('round')
-    eleScore = document.getElementById('score')
-    eleBalls = document.getElementById('balls')
-
-    previewOn = true
     previewLength = 20
     previewFrameTime = 16.7
     previewPrevTime = 0
 
+    app.style.display = 'flex'
+
     stateInit()
+
+    canvas.onclick = (event) => {
+        // console.log(event.offsetX, event.offsetY)
+        handleClick(event.offsetX, event.offsetY)
+    }
+    canvas.onmousemove = (event) => {
+        showPreview(event.offsetX, event.offsetY)
+    }
+    canvas.ontouchend = (event) => {
+        // console.log(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
+        //             event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop)
+        handleClick(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
+                    event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop)
+        event.preventDefault()
+    }
+    canvas.ontouchmove = (event) => {
+        // console.log(event)
+        showPreview(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
+                    event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop)
+        event.preventDefault()
+    }
+    
+    userConfig = {
+        speed: 1,
+        preview: true
+    }
+    if (window.localStorage && localStorage.getItem('gamedata')) {
+        let data = JSON.parse(localStorage.getItem('gamedata'))
+        martix = data.martix || martix
+        round = data.round || round
+        score = data.score || score
+        ballNums = data.ballNums || ballNums
+        startX = data.startX*WIDTH || startX
+        if (!(RADIUS<startX && startX<WIDTH-RADIUS)) startX = Math.floor(WIDTH/2)
+        updateView()
+    } else {
+        nextRound()  
+    }
 }
 
 const next = [[-1,-1],[-1,0],[-1,1],[0,1],[1,1],[1,0],[1,-1],[0,-1]] //八个方向
@@ -217,7 +227,7 @@ function updateView() {
         //非发射阶段
         new Ball(startX, startY, RADIUS, 0, 0, startColor).draw()
 
-        if (previewOn) {
+        if (userConfig.preview) {
             for (let ball of previewBalls) {
                 ctx.beginPath()
                 ctx.strokeStyle = ball.color
@@ -552,7 +562,7 @@ class Ball {
         ctx.fill()
         ctx.closePath()
     }
-    move() {
+    move(step) {
         let d = this.vel    //前进距离
         let bounced = null //记录反弹过的方块
 
@@ -634,7 +644,9 @@ class Ball {
                 ballNums += Math.abs(martix[i][j])
                 martix[i][j] = 0
             }
-        } 
+        }
+
+        if (step>1) this.move(step-1)
     }
 }
 
@@ -654,7 +666,7 @@ function loop() {
 
     //移动小球 并去除碰撞底部的小球
     balls = balls.filter(ball=>{
-        ball.move()
+        ball.move(userConfig.speed)
         if (ball.x<0 || ball.x>WIDTH || ball.y<0) return false
         startX = ball.x
         startColor = ball.color
@@ -665,18 +677,17 @@ function loop() {
         updateView()
         if (skipping) {
             loop()
-        } else {
+        } else if (!pausing) {
             if (!devMode) requestAnimationFrame(loop) 
                 else setTimeout(loop, devStep)
         }
-    }
-    else {
+    } else {
         nextRound()
     }
 }
 
 function showPreview(x, y) {
-    if (gameover || shooting || !previewOn) return
+    if (gameover || shooting || !userConfig.preview) return
     let curr = Date.now()
     if (curr - previewPrevTime < previewFrameTime) return
     previewPrevTime = curr
@@ -691,7 +702,7 @@ function showPreview(x, y) {
         )
         for (let i=0; i<previewLength; i++) {
             for (let j=0; j<interval; j++) {
-                ball.move()
+                ball.move(1)
                 if (ball.y+ball.r>HEIGHT) break
             }
             if (ball.y+ball.r>HEIGHT) break
@@ -710,10 +721,6 @@ function showPreview(x, y) {
 function handleClick(x, y) {
     // console.log(event.offsetX-startX, event.offsetY-startY, getAngel(event.offsetX, event.offsetY, startX, startY))
     // return
-    if (gameover) {
-        replay()
-        return
-    }
     if (y > deadline) {
         if (shooting && canskip) {
             skipping = true
@@ -743,17 +750,15 @@ function handleClick(x, y) {
 
 function gameOver() {
     gameover = true
-
-    ctx.fillStyle = "rgba(0, 0, 0, 0.6)"
-    ctx.fillRect(0, 0, WIDTH, HEIGHT)
-    ctx.fillStyle = "#ddd"
-    ctx.font= Math.floor(blockSize)+"px"+" Arial"
-    ctx.fillText('GAME OVER', WIDTH/2, HEIGHT/2-blockSize) 
-    ctx.font= Math.floor(blockSize *0.5)+"px"+" Arial"
-    ctx.fillText('Score: '+score, WIDTH/2, HEIGHT/2+blockSize)
-    
+    elefinalscore.innerText = score
+    elegameover.style.display = 'flex'
     // alert('Game Over! score:'+score)
     // replay()
+}
+function gameOverClick() {
+    gameover = false
+    elegameover.style.display = 'none'
+    replay()
 }
 
 function replay() {
@@ -764,35 +769,23 @@ function replay() {
     nextRound() 
 }
 
+function pause() {
+    if (shooting) {
+        pausing = true
+    }
+}
+
+function start() {
+    if (shooting) {
+        pausing = false
+        if (!devMode) requestAnimationFrame(loop) 
+            else setTimeout(loop, devStep)
+    }
+}
+
 window.onload = ()=>{
     init()
-    canvas.onclick = (event) => {
-        // console.log(event.offsetX, event.offsetY)
-        handleClick(event.offsetX, event.offsetY)
-    }
 
-    canvas.onmousemove = (event) => {
-        showPreview(event.offsetX, event.offsetY)
-    }
-    canvas.ontouchend = (event) => {
-        // console.log(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
-        //             event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop)
-        handleClick(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
-                    event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop)
-        event.preventDefault()
-    }
-    // canvas.ontouchstart =(event) => {
-    //     // console.log(event)
-    //     showPreview(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
-    //                 event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop)
-    //     event.preventDefault()
-    // }
-    canvas.ontouchmove = (event) => {
-        // console.log(event)
-        showPreview(event.changedTouches[0].clientX - event.target.offsetLeft - event.target.clientLeft, 
-                    event.changedTouches[0].clientY - event.target.offsetTop - event.target.clientTop)
-        event.preventDefault()
-    }
     //test
     if (devMode) {
         for (let i=0; i<n*0.8; i++) 
@@ -807,17 +800,4 @@ window.onload = ()=>{
         ballNums = 10000
         return
     }
-
-    if (window.localStorage && localStorage.getItem('gamedata')) {
-        let data = JSON.parse(localStorage.getItem('gamedata'))
-        martix = data.martix || martix
-        round = data.round || round
-        score = data.score || score
-        ballNums = data.ballNums || ballNums
-        startX = data.startX*WIDTH || startX
-        if (!(RADIUS<startX && startX<WIDTH-RADIUS)) startX = Math.floor(WIDTH/2)
-        updateView()
-    } else {
-        nextRound()  
-    }  
 }

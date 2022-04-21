@@ -19,51 +19,65 @@
         html, body {
             margin: 0;
             padding: 0;
-        }
-        .wrapper {
-            display: flex;
-            width: 100vw;
-            height: 100vh;
-            align-items: center;
-            justify-content: center;
-            background-color: #ddd;
-            /* background-image:url('bg.jpg'); */
-            background-repeat: repeat;
-            background-position: center;
-            background-size: contain;
-            flex-direction: column;
-        }
-        .wrapper canvas {
-            border: 2px solid #eee;
-            background-color: rgba(0, 0, 0, 0.8);
-        }
-        .board {
-            font-size: 1rem;
-            line-height: 2.5rem;
-            height: 2.5rem;
-            /* background-color: #000; */
-            background-color: rgba(0, 0, 0, 0.8);
-            border: 2px solid #eee;
-            border-bottom: 0;
-            color: #eee;
-            display: flex;
-            
+
             -webkit-user-select: none;
             -khtml-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
         }
+        .wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+            background-color: #ddd;
+            /* background-image:url('bg.jpg'); */
+            background-repeat: repeat;
+            background-position: center;
+            background-size: contain;
+            
+        }
+        .app {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .wrapper canvas {
+            border: 2px solid #eee;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        .board {
+            display: flex;
+            flex: 1;
+            font-size: 1rem;
+            /* background-color: #000; */
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 2px solid #eee;
+            border-bottom: 0;
+            color: #eee;
+            /* display: flex; */
+            align-items: center;
+        }
         .items{
             flex: 1;
             font-size: 1rem;
-            height: 2.5rem;
-            line-height: 2.5rem;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             text-align: center;
         }
+        .items span {
+            margin: 0.2rem;
+        }
         .iconitem {
+            display: block;
             width: 2.5rem;
-            height: 2.5rem;
+            height: 2rem;
             font-size: 1.5rem;
             cursor: pointer;
             text-align: center;
@@ -72,34 +86,79 @@
             text-decoration: none;
             color: #fff;
         }
+        .settings {
+            display: none;
+        }
+        .gameover {
+            display: none;
+            position: absolute;
+            font-size: 4rem;
+            color: #fff;
+            background-color: rgba(0,0,0,0.5);
+            height: 100%;
+            width: 100%;
+            /* display: flex; */
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            cursor: pointer;
+        }
+        .gameover div {
+            margin: 1rem;
+        }
+        .finalscore {
+            font-size: 1.5rem;
+        }
+        .settings {
+            display: none;
+            position: absolute;
+            background-color: rgba(0,0,0,0.5);
+            height: 100%;
+            width: 100%;
+            /* display: flex; */
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
     </style>
 </head>
 <body>
     <div class="wrapper">
-        <!-- <div class="board">
-            <div class="iconitem">
-                <a href="https://github.com/linyibin97/bounce-ball"><span class="iconfont">&#xe645;</span></a>
+        <div class="app">
+            <div class="board">
+                <div class="items">
+                    <span class="iconfont">&#xe65e;</span>
+                    <span>Round</span>
+                    <span id="round"></span>
+                </div>
+                <div class="items">
+                    <span class="iconfont">&#xe64b;</span>
+                    <span>Score</span>                
+                    <span id="score"></span>
+                </div>
+                <div class="items">
+                    <span class="iconfont">&#xe711;</span>
+                    <span>×</span>   
+                    <span id="balls"></span>
+                </div>
+                <div class="iconitem" onclick="replay()">
+                    <span class="iconfont">&#xe6a4;</span>               
+                </div>
             </div>
-            <div class="items">
-                <span class="iconfont">&#xe65e;</span>
-                <span>Round</span>
-                <span id="round"></span>
+            <canvas id="canvas"></canvas>
+            <div class="settings">
+                <div class="iconitem">
+                    <a href="https://github.com/linyibin97/bounce-ball"><span class="iconfont">&#xe645;</span></a>
+                </div>
             </div>
-            <div class="items">
-                <span class="iconfont">&#xe64b;</span>
-                <span>Score</span>                
-                <span id="score"></span>
-            </div>
-            <div class="items">
-                <span class="iconfont">&#xe711;</span>
-                <span>×</span>   
-                <span id="balls"></span>
-            </div>
-            <div class="iconitem" onclick="replay()">
-               <span class="iconfont">&#xe6a4;</span>               
+            <div class="gameover" onclick="gameOverClick()">
+                <div>Game Over</div>
+                <div class="finalscore">
+                    <span>Score:</span>
+                    <span id="finalscore"></span>
+                </div>
             </div>
         </div>
-        <canvas></canvas> -->
     </div>
     <script src="./main.js"></script>
 </body>
