@@ -1,14 +1,13 @@
 const n = 15 //矩阵高
 const m = 10 //矩阵宽
 const interval = 3 //小球发射间隔帧数
-let devMode = false //调试
 let devStep = 10
 const debugShowAliveFrame = 10
 const correctionAngel = 7 //修正角度
 let debugDispaly = []
 let WIDTH, HEIGHT, blockSize, RADIUS, vel, startX, startY, deadline
-let gameover, shooting, skipping, canskip, canskiptimer, framcount, startColor, userConfig
-let canvas, ctx, eleRound, eleScore, eleBalls, elegameover, elefinalscore
+let gameover, shooting, skipping, canskip, canskiptimer, framecount, startColor, userConfig
+let canvas, ctx, eleRound, eleScore, eleBalls, elegameover, elefinalscore, eleSpeed, elePreview, eledevMode, eleSettings
 let ballNums, readyBalls, balls
 let round, score, nReward, martix
 let previewLength, previewFrameTime, previewBalls, previewPrevTime
@@ -31,7 +30,7 @@ function stateInit() {
     canskip = false
     if (canskiptimer) clearTimeout(canskiptimer)
     canskiptimer = null
-    framcount = 0   //渲染帧计数 
+    framecount = 0   //渲染帧计数 
 
     ballNums = 1   //发射球的数量
     balls = new Array() //已发射的球
@@ -71,6 +70,10 @@ function init() {
     eleBalls = document.getElementById('balls')
     elegameover = document.querySelector('.gameover')
     elefinalscore = document.getElementById('finalscore')
+    eleSpeed = Array.from(document.getElementsByName('speed'))
+    elePreview = document.getElementById('preview')
+    eledevMode = document.getElementById('devmode')
+    eleSettings = document.querySelector('.settings')
     // WIDTH = 480
     // HEIGHT = Math.floor(WIDTH/3*5)
     // console.log(windowHeight,windowWidth,WIDTH,HEIGHT)
@@ -119,10 +122,57 @@ function init() {
         event.preventDefault()
     }
     
+    loadUserConfig()
+
+    if (loadGameData()) {    
+        updateView()
+    } else {
+        nextRound()  
+    }
+}
+
+function openMenu() {
+    eleSettings.style.display = 'block'
+    pause()
+}
+function closeMenu() {
+    eleSettings.style.display = 'none'
+    updateView()
+    start()
+}
+function loadUserConfig() {
     userConfig = {
         speed: 1,
-        preview: true
+        preview: true,
+        devMode: false,
     }
+    if (window.localStorage && localStorage.getItem('userconfig')) {
+        let data = JSON.parse(localStorage.getItem('userconfig'))
+        userConfig = Object.assign(userConfig, data || {}) 
+    }
+    eleSpeed[userConfig.speed-1].checked = true
+    elePreview.checked = userConfig.preview
+    eledevMode.checked = userConfig.devMode
+}
+function saveUserConfig() {
+    if (window.localStorage) {
+        window.localStorage.setItem('userconfig', JSON.stringify(userConfig))
+    }
+}
+function updateUserConfig() {
+    let speed
+    eleSpeed.forEach((item, index)=>{
+        if (item.checked) speed = index + 1
+    })
+    userConfig = {
+        speed,
+        preview: elePreview.checked,
+        devMode: eledevMode.checked,
+    }
+    saveUserConfig()
+}
+
+function loadGameData() {
     if (window.localStorage && localStorage.getItem('gamedata')) {
         let data = JSON.parse(localStorage.getItem('gamedata'))
         martix = data.martix || martix
@@ -131,11 +181,23 @@ function init() {
         ballNums = data.ballNums || ballNums
         startX = data.startX*WIDTH || startX
         if (!(RADIUS<startX && startX<WIDTH-RADIUS)) startX = Math.floor(WIDTH/2)
-        updateView()
+        return true
     } else {
-        nextRound()  
+        return false
     }
 }
+function saveGameData() {
+    if (window.localStorage) {
+        window.localStorage.setItem('gamedata', JSON.stringify({
+            martix,
+            round, 
+            score, 
+            ballNums, 
+            startX:startX/WIDTH, 
+        }))
+    }
+}
+
 
 const next = [[-1,-1],[-1,0],[-1,1],[0,1],[1,1],[1,0],[1,-1],[0,-1]] //八个方向
 next[-1] = [0,-1]
@@ -241,7 +303,7 @@ function updateView() {
         //发射阶段
         balls.forEach(ball=>ball.draw())
 
-        if (devMode)
+        if (userConfig.devMode)
             debugDispaly = debugDispaly.filter(item=>{
                 item.alive = item.alive - 1
                 if (item.type == 'point') {
@@ -285,7 +347,7 @@ function nextRound() {
         martix.unshift(layer)
         return true
     }
-    framcount = 0
+    framecount = 0
     shooting = false
     skipping = false
     canskip = false
@@ -303,9 +365,7 @@ function nextRound() {
         return
     }
 
-    if (window.localStorage) {
-        window.localStorage.setItem('gamedata', JSON.stringify({martix, round, score, ballNums, startX:startX/WIDTH}))
-    }
+    saveGameData()
 
     updateView()
 }
@@ -362,7 +422,7 @@ const getLinesCollisionPoints = (si, sj, ti, tj, r, k, path) => {
     const y2 = (ti + 1) * blockSize
     if (si < ti && !isBlockIJ(ti - 1, tj)) {
         //墙在下
-        if (devMode && shooting) debugDispaly.push({type:'line', x1:x1, y1:y1 - r, x2:x2, y2:y1 - r, alive:debugShowAliveFrame, color: 'blue'})
+        if (userConfig.devMode && shooting) debugDispaly.push({type:'line', x1:x1, y1:y1 - r, x2:x2, y2:y1 - r, alive:debugShowAliveFrame, color: 'blue'})
         let intersection = getIntersection(new Line(x1, y1 - r, x2, y1 - r), path)
         if (intersection) {
             //有交点 
@@ -377,7 +437,7 @@ const getLinesCollisionPoints = (si, sj, ti, tj, r, k, path) => {
     }
     if (si > ti && !isBlockIJ(ti + 1, tj)) {
          //墙在上
-        if (devMode && shooting) debugDispaly.push({type:'line', x1:x1, y1:y2 + r, x2:x2, y2:y2 + r, alive:debugShowAliveFrame, color: 'blue'})
+        if (userConfig.devMode && shooting) debugDispaly.push({type:'line', x1:x1, y1:y2 + r, x2:x2, y2:y2 + r, alive:debugShowAliveFrame, color: 'blue'})
         let intersection = getIntersection(new Line(x1, y2 + r, x2, y2 + r), path)
         if (intersection) {
             //有交点 
@@ -392,7 +452,7 @@ const getLinesCollisionPoints = (si, sj, ti, tj, r, k, path) => {
     }
     if (sj < tj && !isBlockIJ(ti, tj - 1)) {
          //左边
-        if (devMode && shooting) debugDispaly.push({type:'line', x1:x1 - r, y1:y1, x2:x1 - r, y2:y2, alive:debugShowAliveFrame, color: 'blue'})
+        if (userConfig.devMode && shooting) debugDispaly.push({type:'line', x1:x1 - r, y1:y1, x2:x1 - r, y2:y2, alive:debugShowAliveFrame, color: 'blue'})
         let intersection = getIntersection(new Line(x1 - r, y1, x1 - r, y2), path)
         if (intersection) {
             //有交点 
@@ -407,7 +467,7 @@ const getLinesCollisionPoints = (si, sj, ti, tj, r, k, path) => {
     }
     if (sj > tj && !isBlockIJ(ti, tj + 1)) {
         //右边
-        if (devMode && shooting) debugDispaly.push({type:'line', x1:x2 + r, y1:y1, x2:x2 + r, y2:y2, alive:debugShowAliveFrame, color: 'blue'})
+        if (userConfig.devMode && shooting) debugDispaly.push({type:'line', x1:x2 + r, y1:y1, x2:x2 + r, y2:y2, alive:debugShowAliveFrame, color: 'blue'})
         let intersection = getIntersection(new Line(x2 + r, y1, x2 + r, y2), path)
         if (intersection) {
             //有交点 
@@ -460,7 +520,7 @@ const getArcsCollisionPoints = (si, sj, ti, tj ,r ,k ,path) => {
     //     for (let dj = 0; dj < 2; dj++) {
     //         const x1 = cx[dj]
     //         const y1 = cy[di] 
-    //         if (devMode) {
+    //         if (userConfig.devMode) {
     //             debugDispaly.push({
     //                 type:'arc',
     //                 x:x1,
@@ -483,7 +543,7 @@ const getArcsCollisionPoints = (si, sj, ti, tj ,r ,k ,path) => {
     // }
 
     const calculate = (x1, y1) => {
-        if (devMode && shooting) {
+        if (userConfig.devMode && shooting) {
             debugDispaly.push({
                 type:'arc',
                 x:x1,
@@ -574,7 +634,7 @@ class Ball {
             let ny = this.y + Math.sin(this.a0/180*Math.PI)*d
             let path = new Line(this.x, this.y, nx, ny)
 
-            if (devMode && shooting) debugDispaly.push({type:'line', x1:this.x, y1:this.y, x2:nx, y2:ny, alive:debugShowAliveFrame, color: 'skyblue'})
+            if (userConfig.devMode && shooting) debugDispaly.push({type:'line', x1:this.x, y1:this.y, x2:nx, y2:ny, alive:debugShowAliveFrame, color: 'skyblue'})
 
             let collisionPoint = null
             //判断与边的交点
@@ -594,7 +654,7 @@ class Ball {
 
             if (collisionPoint) {
                 //发生碰撞
-                if (devMode && shooting) {
+                if (userConfig.devMode && shooting) {
                     debugDispaly.push({
                         type: 'point',
                         x:collisionPoint.x1,
@@ -659,10 +719,10 @@ function loop() {
     // console.log(readyBalls)
     // console.log(balls)
     //每interval帧发射一个小球  
-    if (readyBalls.length>0 && framcount == 0) {
+    if (readyBalls.length>0 && framecount % interval == 0) {
         balls.push(readyBalls.pop())
     }
-    framcount = (framcount + 1) % interval
+    framecount = (framecount + 1) % 60
 
     //移动小球 并去除碰撞底部的小球
     balls = balls.filter(ball=>{
@@ -678,7 +738,7 @@ function loop() {
         if (skipping) {
             loop()
         } else if (!pausing) {
-            if (!devMode) requestAnimationFrame(loop) 
+            if (!userConfig.devMode) requestAnimationFrame(loop) 
                 else setTimeout(loop, devStep)
         }
     } else {
@@ -762,6 +822,7 @@ function gameOverClick() {
 }
 
 function replay() {
+    closeMenu()
     if (window.localStorage) {
         window.localStorage.removeItem('gamedata')
     }
@@ -778,7 +839,7 @@ function pause() {
 function start() {
     if (shooting) {
         pausing = false
-        if (!devMode) requestAnimationFrame(loop) 
+        if (!userConfig.devMode) requestAnimationFrame(loop) 
             else setTimeout(loop, devStep)
     }
 }
@@ -787,17 +848,17 @@ window.onload = ()=>{
     init()
 
     //test
-    if (devMode) {
-        for (let i=0; i<n*0.8; i++) 
-        for (let j=0; j<m; j++) {
-            martix[i][j] = random(-10000,3000)
-            if (martix[i][j] < 0) {
-                if (Math.random()<0.1) martix[i][j] = -1
-                    else martix[i][j] = 0
-            }
-        }
-        updateView()
-        ballNums = 10000
-        return
-    }
+    // if (userConfig.devMode) {
+    //     for (let i=0; i<n*0.8; i++) 
+    //     for (let j=0; j<m; j++) {
+    //         martix[i][j] = random(-10000,3000)
+    //         if (martix[i][j] < 0) {
+    //             if (Math.random()<0.1) martix[i][j] = -1
+    //                 else martix[i][j] = 0
+    //         }
+    //     }
+    //     updateView()
+    //     ballNums = 10000
+    //     return
+    // }
 }

@@ -86,9 +86,6 @@
             text-decoration: none;
             color: #fff;
         }
-        .settings {
-            display: none;
-        }
         .gameover {
             display: none;
             position: absolute;
@@ -115,10 +112,98 @@
             background-color: rgba(0,0,0,0.5);
             height: 100%;
             width: 100%;
-            /* display: flex; */
-            justify-content: center;
-            align-items: center;
+        }
+        .window {
+            background-color: rgba(32,32,32,0.9);
+            border: 2px solid #ddd;
+            color: #ddd;
+            width: 75%;
+            height: 30%;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            padding: 5% 0;
+        }
+        .settile {
+            font-size: 1.5rem;
+        }
+        .setitems {
+            width: 80%;
+        }
+        .setitem {
+            height: 3rem;
+            line-height: 3rem;
+            width: 100%;
+            display: flex;
+            font-size: 1rem;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+        .setitem:nth-child(1) {
+            border-top: 1px solid #333;
+        }
+        .setbtns {
+            width: 80%;
+            display: flex;
+            justify-content: space-between;
+        }
+        .setbtn {
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 3rem;
+            height: 1.5rem;
+        }
+        .switch input {
+            display:none;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: grey;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 1.5rem;
+            width: 1.5rem;
+            left: 0;
+            bottom: 0;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            -webkit-transform: translateX(1.5rem);
+            -ms-transform: translateX(1.5rem);
+            transform: translateX(1.5rem);
+        }
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 1.5rem;
+        }
+        .slider.round:before {
+            border-radius: 50%;
         }
     </style>
 </head>
@@ -132,23 +217,56 @@
                     <span id="round"></span>
                 </div>
                 <div class="items">
-                    <span class="iconfont">&#xe64b;</span>
+                    <span class="iconfont">&#xe7ec;</span>
                     <span>Score</span>                
                     <span id="score"></span>
                 </div>
                 <div class="items">
-                    <span class="iconfont">&#xe711;</span>
+                    <span class="iconfont">&#xe634;</span>
                     <span>×</span>   
                     <span id="balls"></span>
                 </div>
-                <div class="iconitem" onclick="replay()">
-                    <span class="iconfont">&#xe6a4;</span>               
+                <div class="iconitem" onclick="openMenu()">
+                    <span class="iconfont">&#xe62e;</span>               
                 </div>
             </div>
             <canvas id="canvas"></canvas>
             <div class="settings">
-                <div class="iconitem">
-                    <a href="https://github.com/linyibin97/bounce-ball"><span class="iconfont">&#xe645;</span></a>
+                <div class="window">
+                    <div class="settile">Menu</div>
+                    <div class="setitems">
+                        <div class="setitem">
+                            Speed
+                            <label><input type="radio" name="speed" id="speed" onchange="updateUserConfig()">1×</label>
+                            <label><input type="radio" name="speed" id="speed" onchange="updateUserConfig()">2×</label>
+                            <label><input type="radio" name="speed" id="speed" onchange="updateUserConfig()">3×</label>
+                        </div>
+                        <div class="setitem">
+                            Preview
+                            <label class="switch" onchange="updateUserConfig()">
+                                <input type="checkbox" id="preview">
+                                <div class="slider round"></div>
+                            </label>
+                        </div>
+                        <div class="setitem">
+                            DevMode
+                            <label class="switch" onchange="updateUserConfig()">
+                                <input type="checkbox" id="devmode">
+                                <div class="slider round"></div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="setbtns">
+                        <div class="setbtn">
+                            <a href="https://github.com/linyibin97/bounce-ball"><span class="iconfont">&#xe885;</span></a>
+                        </div>
+                        <div class="setbtn" onclick="closeMenu()">
+                            <span class="iconfont">&#xe66f;</span>
+                        </div>
+                        <div class="setbtn" onclick="replay()">
+                            <span class="iconfont">&#xe6a4;</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="gameover" onclick="gameOverClick()">
