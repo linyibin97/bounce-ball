@@ -17,7 +17,7 @@ function stateInit() {
 
     blockSize = WIDTH/m
     RADIUS = blockSize/6 //球半径
-    vel = 2*RADIUS //运动方向上的速度
+    vel = 1.5*RADIUS //运动方向上的速度
     startX = Math.floor(WIDTH/2)    //发射点
     startY = HEIGHT - RADIUS
     deadline = n*blockSize
